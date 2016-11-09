@@ -10,3 +10,7 @@ In his role as co-founder and CTO of DevelopmentArc®, James strives to take pow
 [@aaronpedersen](https://twitter.com/aaronpedersen)
 
 As co-founder and CEO of DevelopmentArc®, a boutique development firm and parent company of Pedanco, Aaron Pedersen’s passion lies in helping businesses streamline process making teams work more effectively through innovative technology solutions. A published author, expert speaker, and sought-after business consultant and trainer, Aaron works with a wide range of companies, from Fortune 500 corporations and multi-chain hospitality companies to emerging brands and seed-round startups including Toyota Motor Sports, DHAP Digital, Adobe, KitchenNetwork and FitStar.
+
+### Evren Yortuçboylu (Türkçe çeviri)
+[@yortuc](https://twitter.com/yortuc)
+

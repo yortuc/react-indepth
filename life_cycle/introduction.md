@@ -1,6 +1,12 @@
-# The React Life Cycle
- One of the defining factors of a life form is its life cycle. The common path is Birth, Growth into maturity and then the inevitable Death. UI applications often follow a similar path. When the application is first started, we consider this Birth. The users interacts with application, which is Growth. Eventually, the application is closed or navigated away from, leading to Death.
+# React Yaşam Döngüsü
+Yaşayan bir organizmayı tanımlamanın en iyi yolu yaşam döngüsünü incelemektir. Genel olarak doğma, gelişme ve kaçınılmaz olarak ölüm şeklinde sıralanabilir. Arayüz (UI) uygulamaları da genellikle aynı yoldan geçerler. Uygulama başladığında bu bir "doğum" olarak değerlendirilebilir. Kullanıcının uygulama ile etkileşime geçmesi "büyüme" ve son olarak da kullanıcının uygulamayı kapatması da "ölüm" olarak görülebilir. 
  
+ Uygulamayı oluşturan bileşenler de aynı yolu izler. React dünyasında uygulama Bileşen'lerden (Component) oluşur. Bileşenlerin doğması, yaşaması ve ölmesi, uygulama genel yaşam döngüsü içerisinde çokca görülür. Bileşen yaşam döngüsü sürecinin anlaşılması ile daha hızlı ve tutarlı geliştirme yapılabilmesinin yanı sıra optimizasyon ve genel uygulama sağlığı da iyileştirilmiş olur.
+
+ ## React bileşenlerinin yaşam döngüsü evreleri
+ 
+
+
  Within the application, elements also follow this pattern. In the world of React, these elements are our Components. The Component life cycle is a continuous process, which occurs throughout the overall life of our application. Understanding this process can lead to faster and consistent development, easier optimization and improved overall application health.
  
  ## Life cycle phases in React components
