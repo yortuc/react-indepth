@@ -1,4 +1,4 @@
-# React ile arayüz geliştime 
+# React İle Arayüz Geliştime 
 
 Büyük ölçüde [React-in-depth](https://github.com/DevelopmentArc/react-indepth) GitBook'undan çeviri olmakla birlikte, kendi notlarımı ve örneklerimi de derli toplu bir şekilde tutabilmek amacıyla bu dökümanı oluşturdum.
 
@@ -10,7 +10,7 @@ Amaç, React ile arayüz geliştme sürecinin detaylı olarak incelenmesidir. Re
 
 # İçindekiler
 
-* [[Giriş](react_basics/introduction.md)
+* [Giriş](react_basics/introduction.md)
 * [React Yaşam Döngüsü](life_cycle/introduction.md)
    * [Yaşam Döngüsü Metodları](life_cycle/lifecycle_methods_overview.md)
    * [Bileşen Doğum Süreci](life_cycle/birth_mounting_indepth.md)

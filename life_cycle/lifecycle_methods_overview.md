@@ -1,9 +1,9 @@
 # React Life Cycle Methods Overview
- The React development team provides a series of hooks we can tap into at each phase of the life cycle. These method hooks inform us of where the Component is in the life cycle and what we can and cannot do.
-  
-  Each of the life cycle methods are called in a specific order and at a specific time. The methods are also tied to different parts of the life cycle. Here are the methods broken down in order and by their corresponding life cycle phase [^1]:
-  
-## Birth / Mounting
+Bileşenin yaşan döngüsü boyunca olan olaylara göre aksiyon alabilmemiz için React bize metodlar sunmaktadır. Bu metodlar sayesinde bileşenin kendi yaşam döngüsü içerisinde ne aşamada olduğunu anlayabilir ve bileşenin ne yapıp yapamayacağını belirleyebiliriz. 
+
+Her bir yaşam döngüsü metodu belirli sıra ile çalıştırılmaktadır. Burada yaşam döngüsü metotları sıralı olarak verilmiştir.
+
+## Doğum / Mounting
 1. Initialize / Construction
 2. `getDefaultProps()` *(React.createClass)* or `MyComponent.defaultProps` *(ES6 class)*
 3. `getInitialState()` *(React.createClass)* or `this.state = ...` *(ES6 constructor)*
@@ -12,7 +12,7 @@
 6. Children initialization & life cycle kickoff
 7. `componentDidMount()`
   
-## Growth / Update
+## Gelişme / Güncellenme
 1. `componentWillReceiveProps()`
 2. `shouldComponentUpdate()`
 3. `componentWillUpdate()`
@@ -20,15 +20,28 @@
 4. Children Life cycle methods
 5. `componentDidUpdate()`
 
-## Death / Unmount
+## Ölüm / Unmount
 1. `componentWillUnmount()`
 4. Children Life cycle methods
 5. Instance destroyed for Garbage Collection
 
-The order of these methods are strict and called as defined above. Most of the time is spent in the Growth/Update phase and those methods are called many times. The Birth and Death methods will only be called once.
+Bu metotların çağrılması sırası kesin olarak yukarıdaki sıra ile olmaktadır. Bileşen hayatının büyük kısmı gelişme/güncellenme aşaması olarak geçmektedir ve bu aşamadaki metotlar birçok kere çağrılır. Buna karşılık doğum ve ölüm metotları sadece birer kere çalıştırılır.
 
-***Next Up***: [Birth/Mounting in-depth](birth_mounting_indepth.md)
+***Gelecek Bölüm***: [Doğum/Mounting Aşaması](birth_mounting_indepth.md)
 
 ---
+Bileşen tanımlamasında ES6 veya mevcut javascript (ES5) kullanımına bağlı olarak bazı küçük farklılıklar görülebilir. Örnek olarak ES6 kullanıldığında düz javascript class'ları ile tanımlama yapılır:
 
-[^1] *Most of the methods are the same if you use either `React.createClass` or use ES6 classes, such as `class MyComponent extends React.Component`. A few are different, mainly around how instantiation/creation occurs. We will call these differences out throughout the chapter.*
+`class ParagrafBileseni extend React.Component {
+	render = ()=> <p className="paragraf">{this.props.metin}<p>
+}`
+
+eğer ES5 kullanılıyor ise React üzerinde tanımlı bir yardımcı metot çağrılarak bileşen oluşturulur:
+
+`React.createClass({
+	render: function() {
+		return <p className="paragraf">{this.props.metin}<p>
+	}
+});`
+
+Bunlar dışında özellike bileşen "init" edilme noktasında bazı farklılıklar görülmektedir. Bu konuya tekrar değineceğiz.

@@ -1,24 +1,22 @@
 # React Yaşam Döngüsü
 Yaşayan bir organizmayı tanımlamanın en iyi yolu yaşam döngüsünü incelemektir. Genel olarak doğma, gelişme ve kaçınılmaz olarak ölüm şeklinde sıralanabilir. Arayüz (UI) uygulamaları da genellikle aynı yoldan geçerler. Uygulama başladığında bu bir "doğum" olarak değerlendirilebilir. Kullanıcının uygulama ile etkileşime geçmesi "büyüme" ve son olarak da kullanıcının uygulamayı kapatması da "ölüm" olarak görülebilir. 
- 
- Uygulamayı oluşturan bileşenler de aynı yolu izler. React dünyasında uygulama Bileşen'lerden (Component) oluşur. Bileşenlerin doğması, yaşaması ve ölmesi, uygulama genel yaşam döngüsü içerisinde çokca görülür. Bileşen yaşam döngüsü sürecinin anlaşılması ile daha hızlı ve tutarlı geliştirme yapılabilmesinin yanı sıra optimizasyon ve genel uygulama sağlığı da iyileştirilmiş olur.
 
- ## React bileşenlerinin yaşam döngüsü evreleri
- 
+Uygulamayı oluşturan bileşenler de aynı yolu izler. React dünyasında uygulama Bileşen'lerden (Component) oluşur. Bileşenlerin doğması, yaşaması ve ölmesi, uygulama genel yaşam döngüsü içerisinde çokca görülür. Bileşen yaşam döngüsü sürecinin anlaşılması ile daha hızlı ve tutarlı geliştirme yapılabilmesinin yanı sıra optimizasyon ve genel uygulama sağlığı da iyileştirilmiş olur.
 
+## React bileşenlerinin yaşam döngüsü evreleri
 
- Within the application, elements also follow this pattern. In the world of React, these elements are our Components. The Component life cycle is a continuous process, which occurs throughout the overall life of our application. Understanding this process can lead to faster and consistent development, easier optimization and improved overall application health.
- 
- ## Life cycle phases in React components
- Not all UI systems enable a life cycle pattern. This doesn't mean that a system is better or worse if a life cycle is or isn't implemented. All a life cycle does is provide a specific order of operation and a series of hooks to tie into said system. The React life cycle follows the common Birth, Growth, and Death flow. The React team has provided a series of methods you can implement/override to tap into the process.
- 
- ### [Phase 1: Birth / Mounting](birth_mounting_indepth.md)
- The first phase of the React Component life cycle is the Birth/Mounting phase. This is where we start initialization of the Component. At this phase, the Component's `props` and `state` are defined and configured. The Component and all its children are mounted on to the Native UI Stack (DOM, UIView, etc.). Finally, we can do post-processing if required. The Birth/Mounting phase only occurs once.
- 
- ### [Phase 2: Growth / Update](growth_update_indepth.md)
- The next phase of the life cycle is the Growth/Update phase.  In this phase, we get new `props`, change `state`, handle user interactions and communicate with the component hierarchy. This is where we spend most of our time in the Component's life. Unlike Birth or Death, we repeat this phase over and over.
- 
- ### [Phase 3: Death / Unmount](death_unmounting_indepth.md)
- The final phase of the life cycle is the Death/Unmount phase. This phase occurs when a component instance is unmounted from the Native UI. This can occur when the user navigates away, the UI page changes, a component is hidden (like a drawer), etc. Death occurs once and readies the Component for Garbage Collection.
+Tüm UI sistemleri bileşen tabanlı bir mimari kullanmaz. Bu yapı bir sistemin daha "iyi" ya da "kötü" olduğunu göstermez. Yaşam döngüsü dediğimiz süreç aslında bir dizi olayların belirli bir sıra takip edilerek sistem tarafından ateşlenmesidir. React yaşam döngüsü doğum, büyüme ve ölme şeklinde devam etmektedir. React ekibi bu sürece dahil olabilimemiz için biz geliştiricilere gerekli mekanizmayı sağlamaktadır. Bu sürece dahil olabilmek için gerekli metodları oluşturup ya da override etmemiz gerekmektedir. 
 
-***Next Up:*** [Life Cycle Methods Overview](lifecycle_methods_overview.md)
+### [Aşama 1: Doğma](birth_mounting_indepth.md)
+ 
+Bir React bileşenin ilk aşaması doğum (Mounting: DOM veya rendering contex'i üzerine oturma) olarak tanımlanır. Biz de bileşenle ilgili ilk yapılandırma işlemlerini burada yapıyoruz. Bu aşamada bileşenin state ve props değerleri tanımlanmış ve ataması yapılmıştır. Bileşen, ve bileşenin tüm çocukları hangi context'e render ediliyo ise (DOM veya UIView ...) oturtulmuştur. Biz de bu oturma üzerine, gerekli post-process işlemlerini yapabiliriz. Bu olay, bileşenin yaşamı boyunca sadece bir kere tetiklenmektir. 
+
+### [Aşama 2: Büyüme / Gelişme](growth_update_indepth.md)
+
+Diğer aşama da büyüme ve gelişme aşamasıdır. Bu aşamada bileşen, çeşitli güncellemelere maruz kalır. Bileşen state'i değişir, yeni props değerleri ile güncellenir ve kullanıcı ile etkileşime girer. Bileşenin yaşamının büyük kısmı bu aşamada geçer. Doğum ve ölümün aksine bu aşama sürekli tekrarlanır.
+
+### [Aşama 3: Ölüm](death_unmounting_indepth.md)
+
+Bileşenin yaşamındaki son aşamadır. Bileşen rendering contex'inden kaldırıldığı anda gerçekleşir. Kullanıcı uygulamayı kapattığınıda, araryüz değişip bazı bileşenler kaldırıldığında gerçekleşebilir.Ölüm sadece bir kez gerçekleşir ve bileşen Garbage Collection için hazır hale getirilerek hafızadan silinir.
+
+***Gelecek Bölüm:*** [Yaşam döngüsü aşamaları](lifecycle_methods_overview.md)
