@@ -1,61 +1,69 @@
-# Birth/Mounting In-depth
- A React Component kicks off the life cycle during the initial application ex: `ReactDOM.render()`. With the initialization of the component instance, we start moving through the Birth phase of the life cycle. Before we dig deeper into the mechanics of the Birth phase, let's step back a bit and talk about what this phase focuses on.
+# Doğum / Mounting 
+
+Bir React bileşeni hayatına uygulama başlangıcındaki `ReactDOM.render()` metodunun çağrılması ile başlar. Doğum sürecinin temel odak noktası bileşenin başlangıçtaki durumunun (state) yapılandırılmasıdır. Bu aşamada bileşene dışarıdan gönderilen props değerleri ile ilk yapılandırılma başlamış olur.
+
+ ```javascript
+class Bilesen extends React.Component {
+	constructor(props) {
+		super(props);
+		this.state = {metin: "başlangıç metni"};
+	}
+	render = ()=> <span>{this.props.metin}</span>
+}
+ ```
  
- The most obvious focus of the birth phase is the initial configuration for our Component instance. This is where we pass in the `props` that will define the instance. But during this phase there are a lot more moving pieces that we can take advantage of. 
+Yukarıda bir bileşenin hayata başlama sürecinde öncelik props değerlerinin dışarıdan enjekte edilmesini ve hemen sonra da başlangıç state değerinin atanmasını görüyoruz.
+
+Props ve state atamaları yapıldıktan sonra, rendering aşamasında çocuk bileşenlerin her biri için sırayla yaşam döngüsü işletilmeye başlanır. Çocuk bileşenler de Native UI katmanına [^1] mount olduktan sonra, bileşenimiz de Native UI'e erişebilme aşamasına gelir. Bu sayede browser üzerinde çalışıyor isek DOM'u sorgulayabilir ve bileşenin düzgün render edilip edilemediğini anlayabiliriz. Aynı zamanda 3. parti eklenti ve kütüphaneleri de init etmeye bu aşamada başlayabiliriz.
  
- In Birth we configure the default `state` and get access to the initial UI display. It also starts the mounting process for children of the Component. Once the children mount, we get first access to the Native UI layer[^1] (DOM, UIView, etc.). With Native UI access, we can start to query and modify how our content is actually displayed. This is also when we can begin the process of integrating 3rd Party UI libraries and components.
- 
-## Components vs. Elements
- When learning React, many developers have a common misconception. At first glance, one would assume that a mounted instance is the same as a component class. For example, if I create a new React component and then `render()` it to the DOM:
- 
+## Bileşenler ve Öğeler
+
+React öğrenmeye başlayanlar için kafa karıştırıcı olabilecek bir nokta vardır. İlk bakışta birisi Native UI katmanına mount olan bileşen örneğinin bileşen class'ı ile aynı şey olduğunu düşünebilir. Örneğin basit bir React bileşeni oluşturup, Native UI katmanı olarak browse (DOM) üzerine render edersek:
+
  ```javascript
  import React from 'react';
  import ReactDOM from 'react-dom';
  
- class MyComponent extends React.Component {
+ class Bilesen extends React.Component {
    render() {
      return <div>Hello World!</div>;
    }
  };
  
- ReactDOM.render(<MyComponent />, document.getElementById('mount-point')); 
+ ReactDOM.render(<Bilesen />, document.getElementById('moun-edilecek-div')); 
  ```
- 
- The initial assumption is that during `render()` an instance of the `MyComponent` class is created, using something like `new MyComponent()`. This instance is then passed to render. Although this sounds reasonable, the reality of the process is a little more involved.
- 
- What is actually occurring is the JSX processor converts the `<MyComponent />` line to use `React.createElement` to generate the instance. This generated Element is what is passed to the `render()` method:
+
+İlk etapta render metodunda `Bilesen` isimli class'ın bir örneği oluşturuluyor sanılabilir. `new Bilesen()` dermiş gibi. Daha sonra bu class örneği (instance) ReactDOM.render metoduna verilerek DOM üzerine render ediliyor diye düşünülebilir. 
+
+Gerçekte olan ise JSX işlemcisi `<Bilesen />` satırını görüp `React.createElement` metoduna parametre olarak verir. Render edilmek üzere verilen değer aslında class örneği değil, bu fonksiyondan dönen React Öğesidir.
  
  ```javascript
- // generated code post-JSX processing
+ // JSX işlemcisinden sonra 
  ReactDOM.render(
-   React.createElement(MyComponent, null), document.getElementById('mount-point')
+   React.createElement(Bilesen, null), document.getElementById('mount-edilecek-div')
  );
  ```
+
+ Yani `React.createElement(Bilesen, null)` fonksiyon çağrısından geriye dönen değer bir React Öğesidir. React Öğesi[^2], React tarafından Native UI katmanında bu bileşenin nasıl görüntüleneceğini ve nasıl davranacağını tarif eden basit bir veri yapısıdır. Sanal DOM'un yapıtaşı bu React öğeleridir.
  
- A React Element is really just a description[^2] of what will eventually be used to generate  the Native UI. This is a core, pardon the pun, *element* of virtual DOM technology in React.
  
- 
-> The primary type in React is the ReactElement. It has four properties: type, props, key and ref. It has no methods and nothing on the prototype.
+> React'teki esas veri tipi ReactElement isimli öğedir. Sadece dört özellik (property) barındırır: type, props, key ve ref. React öğesi hiçbir metot ve fonksiyonalite barındırmayan salt veridir.
 >
 > -- https://facebook.github.io/react/docs/glossary.html#react-elements
 
-
-The Element is a lightweight object representation of what will become the component instance. If we try to access the Element thinking it is the Class instance we will have some issues, such as availability of expected methods. 
-
-So, how does this tie into the life cycle? These descriptor Elements are essential to the creation of the Native UI and are the catalyst to the life cycle.
+Sonuç olarak her bir React bileşeni, render metodunda, aslında sanal DOM verisi döndürmektedir. 
  
-## The First `render()`
- To most React developers, the `render()` method is the most familiar. We write our JSX and layout here. It's where we spend a lot of time and drives the layout of the application. When we talk about the first `render()` this is a special version of the `render()` method that mounts our entire application on the Native UI.
+## İlk `render()`
+En bilinen bileşen metodu şüphesiz `render()` metodudur. JSX notasyonunu genellikle burada kullanırız. Uygulamanın nasıl görüneceğini büyük ölçüde render'da belirleriz. İlk render ise normal render metodunun biraz özel bir hali olup tüm uygulamayı ilk seferde Native UI katmanına mount eder, yerleştirir.
 
- In the browser, this is the `ReactDOM.render()` method. Here we pass in the root Element and tell React where to mount our content. With this call, React begins processing the passed Element(s) and generate instances of our React components. The Element is used to generate the type instance and then the `props` are passed to the Component instance.
+Browser ortamında bu `ReactDOM.render()` metodudur. Kök bileşeni bu metoda verip, render'in nereye (hangi html elemnaı içerisine) yapılacağı söylenir. Bu metod çağrısı ile React kendisine verilen Öğeleri (ReactElement) işlemeye başlar ve bu öğelere bakarak her bir bileşenin (Component) örneğini oluşturur. Öğeye bakarak hangi tip bileşen oluşturmasını gerektiği React anlayabilir, ve daha sonra `pros` değerleri öğeden bileşen örneğine aktarılır.  
 
- This is the point where we enter the Component life cycle. React uses the `instance` property on the Element and begins construction.
-
+Tam bu sırada bileşen yaşam döngüsü başlamış olur. Öğe üzerindeki `instance` özelliği ile React her bir öğe için bileşen örnekleri oluştrmaya başlar.
  
- ***Next Up:*** [Initialization & Construction](birth/initialization_and_construction.md)
+ ***Gelecek Bölüm:*** [İlk yapılandırma](birth/initialization_and_construction.md)
 
 ---
+[^1] Native UI katmanı, arayüz elemanlarının ekran üzerine çizdirilmesinden sorumlu sistemdir. Browser içerisinde çalışıyor isek Native UI katmanı DOM'a tekabül eder. Mobil bir uygulamada ise UIView (veya Android muadili) olarak karşımıza çıkar. React bileşeni ile Native UI üzerindeki arayüz elemanları arasındaki eşleşmeyi React kendisi yapar. Örnek olarak bir bileşenin bir yerindeki metni değiştirdiğinzde, eğer DOM üzerinde çalışıyorsanız React bu DOM güncellemesini kendisi yapar. 
 
-[^1] The Native UI layer is the system that handles UI content rendering to screen. In a browser, this is the DOM. On device, this would be the UIView (or comparable). React handles the translation of Component content to the native layer format.
-
-[^2] Dan Abramov chimed in with this terminology on a StackOverflow question. http://stackoverflow.com/a/31069757
+[^2] Dan Abramov'un bu konudaki yorumlarına gözatabilirsiniz.
+http://stackoverflow.com/a/31069757
