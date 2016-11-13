@@ -1,52 +1,53 @@
-# Pre-mounting with `componentWillMount()`
- Now that the props and state are set, we finally enter the realm of Life Cycle methods. The first true life cycle method called is `componentWillMount()`. This method is only called one time, which is before the initial render. Since this method is called before `render()` our Component will not have access to the Native UI (DOM, etc.). We also will not have access to the children `refs`, because they are not created yet.
+# `componentWillMount()` metodu
 
-The `componentWillMount()` is a chance for us to handle configuration, update our state, and in general prepare for the first render. At this point, props and initial state are defined. We can safely query `this.props` and `this.state`, knowing with certainty they are the current values. This means we can start performing calculations or processes based on the prop values.
+Geçen bölümde incelediğimiz ilk yapılandırma aşamasında `props` ve `state` değerleri tanımlandıktan sonra, yaşam döngüsü metotları başlamış oldu. İlk gerçek yaşam döngüsü metodu `componentWillMount()` olarak karşımıza çıkar. Bu metot, bileşen ilk defa render edilmeden önce, tüm yaşamı boyunca sadece bir kez çalışır. Daha bileşen render olmadan çalıştığı için, bu metot içerisinden Native UI katmanına (DOM ve UIView veya başka bir mecra) erişmemiz mümkün değildir. Ayrıca henüz render olmadıkları için çocuk bileşenlerin `ref` değerlerine de erişmeyiz. 
 
-**Person.js [^1]**
-```javascript
+`componentWillMount()` metodu bize bileşen için yapılandırma, state güncellemsi ve ilk render için gerekli hazırlıkların yapılması için fırsat verir. Metodun çağrıldığı noktada `state` ve `props` değerleri tanımlıdır. Bu değerleri sorgulayabilir ve bunlara göre aksiyon alabiliriz. 
+
+**Kisi.js [^1]**
+```jsx
 import React from 'react';
 import classNames from 'classnames';
 
-class Person extends React.Component {
+class Kisi extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { mode: undefined } ;
+    this.state = { durum: undefined } ;
   }
 
   componentWillMount() {
-    let mode;
-    if (this.props.age > 70) {
-      mode = 'old';
-    } else if (this.props.age < 18) {
-      mode = 'young';
+    let durum;
+    if (this.props.yas > 70) {
+      durum = 'yaşlı';
+    } else if (this.props.yas < 18) {
+      durum = 'genç';
     } else {
-      mode = 'middle';
+      durum = 'orta';
     }
-    this.setState({ mode });
+    this.setState({ durum });
   }
 
   render() {
     return (
-      <div className={ classNames('person', this.state.mode) }>
-        { this.props.name } (age: { this.props.age })
+      <div className={ classNames('kisi', this.state.durum) }>
+        { this.props.isim } (age: { this.props.yas })
       </div>
     );
   }
 }
 
-Person.defaultProps = { age: 'unknown' };
+Person.defaultProps = { yas: 'Bilinmiyor' };
 
-export default Person;
+export default Kisi;
 ```
 
-In the example above we call `this.setState()` and update our current state before render. If we need state values on calculations passed in `props`, this is where we should do the logic. 
+Yukarıdaki örnekte `this.setState()` ile mevcut state değerini ilk render'den önce değiştiriyoruz. Eğer bileşen aktarılan `props` değerlerine bağlı olarak bazı `state` değerleri hesaplamak istiyor isek bunu yapmanın en doğru olduğu yer `componenWillMount()` metodudur. 
 
-Other uses for `componentWillMount()` includes registering to global events, such as a Flux store. If your Component needs to respond to global Native UI events, such as `window` resizing or focus changes, this is a good place to do it[^2].
+Browser pencesinin yeniden boyutlandırılması (`window.onresize`) gibi global olaylara kaydolarak bileşenin bu durumlardan haberdar olmasını sağlamak istiyor isek, bu kayıt işlemi için de en doğru yer `componentWillMount()` metodudur. 
 
-***Next Up:*** [Component `render()`](component_render.md)
+***Gelecek Bölüm:*** [Bileşen `render()` metodu](component_render.md)
 
 ---
-[^1] In our example above, we are using the `classNames()` library, which was originally included as a React Addon. However, the feature has been removed from React and moved to its [own library](https://github.com/JedWatson/classnames) for use with or without React.
+[^1] Buradaki örnekte `classNames()` kütüphanesini kullandık. Önceden React üzerinde bir eklenti olarak gelen bu kütüphane, sonradan kendi başına bir modül olarak yapılandırılmıştır. [Class Names](https://github.com/JedWatson/classnames) for use with or without React.
 
-[^2] It's important to remember that many Native UI elements do not exist at this point in the life cycle. That means we need to stick to very high-level/global events such as `window` or `document`.
+[^2] Bu aşamada henüz birçok Native UI elemanı render edilmiş olmadığı sadece çok genel olaylara (`window` ve `document` nesnelerinin olayları) kayıt olunabileceği unutulmamalıdır.

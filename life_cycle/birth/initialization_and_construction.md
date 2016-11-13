@@ -151,5 +151,4 @@ Buradaki log metodu hata verecektir çünkü `this.state` değeri tanımlanmış
 
 Genel olarak, bileşen içerisinde kullanılan her bir `state` değeri için başlangıç değeri tanımlanması daha doğrudur. Bazı durumlarda bu başlangıç değerleri `null` veya `undefined` dahi olabilir. 
 
-
-***Gelecek Bölüm:*** [`componentWillMount()` metodu](premounting_with_componentwillmount.md)
+***Gelecek Bölüm:***[`componentWillMount()` metodu](premounting_with_componentwillmount.md)
