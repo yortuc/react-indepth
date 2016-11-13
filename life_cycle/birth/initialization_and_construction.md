@@ -1,154 +1,155 @@
-# Initialization & Construction
- During the initialization of the Component from the Element, the `props` and `state` are defined. How these values are defined depends on if you are using `React.createClass()` or `extend React.Component`. Let's first look at `props` and then we will examine `state`.
+# İlk yapılandırma
+Bir bileşenin React öğesinden (ReactElement) türetilmesi sırasında, props ve state değerleri tanımlanır. Bu değerlerin nasıl tanımlandığı ES5 (`React.createClass()`) veya ES6 (`extend React.Component`) kullanımına bağlı olarak farklılık gösterir. Öncelikle props değerini inceleyelim.
 
-## Default Props
-As we mentioned earlier, the Element instance contains the current `props` that are being passed to the Component instance. Most of the time, all the available `props` on the Component are not required. Yet, some times we do need to have values for all the `props` for our Component to render correctly.
+## Props başlangıç değerleri
+Daha önce bahsettiğimiz gibi, React öğesi Bileşene aktarmak üzere props değerlerini barındırır. Çoğu zaman bileşen için tüm props değerlerinin belirtilmesi gerekmez. Bu durumda, eğer props değeri belirtilmemiş ise, bizim props başlangıç değeri olarka tanımladığımız değer kullanılır. 
 
-For example, we have a simple component that renders a name and age.
+Örneğin, isim ve yaş gösteren basit bir bileşen tanımlayalım. 
 
 ```javascript
 import React from 'react';
 
-export default class Person extends React.Component {
+export default class Kisi extends React.Component {
   render() {
     return (
-      <div>{ this.props.name } (age: { this.props.age })</div>
+      <div>{ this.props.isim } (age: { this.props.yas })</div>
     );
   }
 }
 ```
 
+Bu durumda, Kisi adlı bileşene `isim` ve `yas` adında iki props değeri vermemiz gerekmektedir. Eğer yaş değerini zorunlu olmaktan çıkarmak istiyor isek, bir başlangıç değeri atamamız gerekir. 
 
-In our case, we expect two props to be passed in: `name` and `age`. If we want to make `age` optional and default to the text 'unknown' we can take advantage of React's default props. 
-
-**For ES6 Class**
+**ES6 için**
 ```javascript
 import React from 'react';
 
-class Person extends React.Component {
+class Kisi extends React.Component {
   render() {
     return (
-      <div>{ this.props.name } (age: { this.props.age })</div>
+      <div>{ this.props.isim } (age: { this.props.yas })</div>
     );
   }
 }
 
-Person.defaultProps = { age: 'unknown' };
+Kisi.defaultProps = { yas: 'Bilinmiyor' };
 
-export default Person;
+export default Kisi;
 ```
 
-**For createClass (ES6/ES5/CoffeeScript, etc.)**
+**ES5 ve öncesi**
 
 ```javascript
-var Person = React.createClass({
+var Kisi = React.createClass({
   getDefaultProps: function() {
-    return ({ age: 'unknown' });
+    return ({ yas: 'Bilinmiyor' });
   },
   
   render: function() {
     return (
-      <div>{ this.props.name } (age: { this.props.age })</div>
+      <div>{ this.props.isim } (age: { this.props.yas })</div>
     );
   }
 });
 ```
 
-The result of either process is the same. If we create a new instance without setting the age prop ex: `<Person name="Bill" />`, the component will render `<div>Bill (age: unknown)</div>`.
+İki kullanımın da sonucu aynıdırı. Eğer yaş prop'unu vermeden bileşeni render edecek olursa, yaş kısmında `Bilinmiyor` yazdığını görürüz. 
 
-React handles default props by merging the passed props object and the default props object. This process is similar to [`Object.assign()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign) or the Lodash/Underscore [`_.assign()`](https://lodash.com/docs#assign) method. The default props object is the target object and the passed props is the source:
+React, props değeri için bağlangıç değerleri ile bileşene aktarılan değerleri üst üste birleştirerek (merge) kullanır. Yani yaş değeri bileşene verilir ise, başlangıç değeri üzerine yazılır ve yas prop'unun değeri `Bilinmiyor` değerinden verilen değere dönüşür. React bu işlemi [`Object.assign()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign) metodu ile yapmaktadır. 
 
 ```javascript
-// React library code to extract defaultProps to the Constructor
+// React Kütüphanesi kodu
 if (Constructor.getDefaultProps) {
    Constructor.defaultProps = Constructor.getDefaultProps();
 }
 
-// psuedo code (as an example)
+// bileşen props değerleri merge ediliyor
 this.props = Object.assign(Constructor.defaultProps, elementInstance.props);
 ```
 
-In the React code snippet, React checks the underlying Class instance to see if it defines `getDefaultProps()` and uses this to set the values. When using ES6 classes we just define it on the class itself. Any property defined on the `passedProps` value is applied/overridden to the property in the default props object.
+React öncelikle verilen bileşen örneğini (class instance), `getDefaultProps()` metodunu implemente edip etmediğine bakar. Eğer edilmiş ise bu metodu kullanarak başlangıç props değerlerini atar. Eğer ES6 sınıflarını kullanıyor isek, props değeri direk sınıf üzerinden tanımlanır. (`bilesen.defaultProps =  {...}`). Ve daha sonra bileşene verilen her props değeri, başlangıç props değeri üzerine yazılarak güncellenir. Böylece eksik verilen props değerleri yerine başlangıç props değerleri kullanılırken, bileşene verilen değerler güncel olarak tutulur.
 
-### `null` vs. `undefined` props
-When using default props, it is important to understand how the React merge process works. Often, we are generating props dynamically based on application state ([Flux](https://facebook.github.io/flux/), [Redux](http://redux.js.org/), [Mobx](https://github.com/mobxjs/mobx), etc.). This means that we can sometimes generate `null` values and pass this as the prop.
+### Props değeri için `null` ve `undefined`
 
-When assigning default props, the React object merge code sees `null` as a defined value.
+Bileşenin ilk props değerleri atarnırken, React bileşene aktarılan `null` değerlerini de merge eder. Çünkü `null` değeri olmasa da, tanımlanmış bir değerdir. 
 
 ```javascript
-<Person name="Bob" age={ null } />
+<Kisi isim="Ata" yas={ null } />
 ```
 
-Because `null` is a defined value our Component would render this as `<div>Bob (age:)</div>` instead of rendering *unknown*. But, if we pass in `undefined` instead of `null`, React treats this as undefined (well yeah, obviously) and we would render *unknown* as expected.
+Bu durumda, başlangıç props değerlerinde tanımlı olan yas değeri (`Bilinmiyor` olarka tanımlamıştık) verilen `null` ile güncellenir. Ve bileşenin çıktısı `<div>Ata (yas:)</div>` şeklinde olur. Ancak burada `undefined` değeri verilir ise, doğal olarak React bu değeri verilmemiş sayar ve yas prop'u için başlangıç değeri olan `Bilinmiyor`'u kullanır. 
 
-Keep this in mind when defining default props, because tracing down a `null` value can be tricky in larger application.
+Bir bileşen için props değerleri aktarılırken akılda tutulması gereken bir durumdur. Beklenilenin dışında bir çıktı alınmasına sebep olur ve takip edilmesi zahmetli olabilen bir hatadır.
 
-## Initial State
- Once the final props are defined (passed w/ defaults), the Component instance configures the initial `state`. This process occurs in the construction of the instance itself. Unlike props, the Component state is an internal object that is not defined by outside values.
+
+## Başlangıç state değeri
+
+Başlangıç props değeri merge edilip son haline kavuştuktan sonra, bileşen için dahili veri deposu olan `state` atamasına geçilir. Bu süreç bileşen örneğinin çıkartılması (construction) zamanında yapılır. Props değerinin aksine `state` tamamen bileşen içerisinde, izole bir veri kümesi olup, bileşene dışarıdan aktarılmaz. 
+
+Yine iki şekilde, ES6 Sınıfları ya da klasik js ile tanımalada küçük farklılıklar bulunmaktadır. 
  
- To define the initial `state` depends on how you declare your Component. For ES6 we declare the state in the constructor. Just like `defaultProps`, the initial state takes an object.
- 
- **For ES6 Class**
+ **ES6 Class**
 ```javascript
 import React from 'react';
 
-class Person extends React.Component {
+class Kisi extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { count: 0 };
+    this.state = { sayi: 0 };
   }
 
   render() {
     return (
-      <div>{ this.props.name } (age: { this.props.age })</div>
+      <div>{ this.props.isim } (age: { this.props.yas })</div>
     );
   }
 }
 
-Person.defaultProps = { age: 'unknown' };
+Kisi.defaultProps = { age: 'Bilinmiyor' };
 
-export default Person;
+export default Kisi;
 ```
 
-For `React.createClass` Components, there is a helper method called `getInitialState()` which returns the state object. This method is called during setup to set the state on the instance.
+`React.createClass` metodu için `getInitialState()` isimli yardımcı bir metod çağrılır. React her bileşen örneği çıkardğında bu metodu çağırarak bileşenin başlangıç `state` değerini elde eder.
 
-**For createClass (ES6/ES5/CoffeeScript, etc.)**
+**ES6 öncesi**
 
 ```javascript
-var Person = React.createClass({
+var Kisi = React.createClass({
   getDefaultProps: function() {
-    return ({ age: 'unknown' });
+    return ({ age: 'Bilinmiyor' });
   },
   
   getInitialState: function() {
-    return ({ count: 0 });
+    return ({ sayi: 0 });
   },
   
   render: function() {
     return (
-      <div>{ this.props.name } (age: { this.props.age })</div>
+      <div>{ this.props.isim } (age: { this.props.yas })</div>
     );
   }
 });
 ```
 
-### State defaults
- It is important to keep in mind that if we do not define a state in the constructor/getInitialState then the state will be `undefined`. Because the state is `undefined` and not an empty Object (`{}`), if you try to query the state later on this will be an issue.
- 
- In general, we want to set a default value for all our state properties. There are some edge cases where the initial value for the state property may be `null` or `undefined`. If this state happens to be only state property, it may be tempting to skip setting a default state. But, if our code tries to access the property you will get an error.
+Eğer herhangi bir `state` değeri tanımlamamış ya da `getInitialState()` metodu ile bir değer döndürmemiş ise, `state` değeri `undefined` olacaktır. Başlangıç state değeri boş bir nesne yerine (`{}`) `undefned` olduğu için eğer herhangi bir `state` değerine ulaşılmaya çalışılırsa hata alınacaktır. Örneğin,
+
  
  ```javascript
- class Person extends React.Component {
+ class Kisi extends React.Component {
   render() {
-    // This statement will throw an error
-    console.log(this.state.foo);
+    // Burada bir hata alınacak
+    console.log(this.state.dogumYeri);
     return (
-      <div>{ this.props.name } (age: { this.props.age })</div>
+      <div>{ this.props.isim } (age: { this.props.yas })</div>
     );
   }
 }
  ```
 
-The log statement fails because `this.state` is undefined. When we try to access `foo` we will get a *TypeError: Cannot read property 'foo' of null*. To solve this we can either set the default state to `{}` or, to have a clearer intention, set it to `{ foo: null }`.
+Buradaki log metodu hata verecektir çünkü `this.state` değeri tanımlanmış değildir. Bu sorunu çözmek için ya başlangıç state değeri ataması yapılmalıdır.
 
-***Next Up:*** [Pre-mounting with `componentWillMount()`](premounting_with_componentwillmount.md)
+Genel olarak, bileşen içerisinde kullanılan her bir `state` değeri için başlangıç değeri tanımlanması daha doğrudur. Bazı durumlarda bu başlangıç değerleri `null` veya `undefined` dahi olabilir. 
+
+
+***Gelecek Bölüm:*** [`componentWillMount()` metodu](premounting_with_componentwillmount.md)
