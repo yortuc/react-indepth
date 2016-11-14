@@ -1,15 +1,16 @@
-# Component `render()`
- Now that we have pre-configured our Component, we enter the first rendering of our content. As React developers, the `render()` method is the most familiar. We create Elements (generally via JSX) and return them. We access the Component `this.props` and `this.state` and let these values derive how content should be generated. When we access `this.state`, any changes we made during `componentWillMount()` are fully applied. 
+# Bileşen `render()` metodu
 
-Unlike any other method in the Life Cycle, `render()` is the one method that exists across multiple life cycle phases. It occurs here in Birth and it is where we spend a lot of time in Growth. 
+Bileşenimiz için yapılandırma aşamasını tamamladıktan sonra, şimdi ilk kez render etme aşamasıan geldik. JSX kullanarak React öğeleri oluşturup (ReactElement), bunları geri döndürüyoruz. Bu aşamada bileşenin ´state´ ve ´props´ değerlerine erişebiliyor ve zaten bileşenin nasıl render edilmesi gerektiğine bu değelere göre karar veriyoruz. `componentWillMount()` metodunda eğer `state` değeri değişikliğe uğramış ise bu aşamada güncellemeler tamamen uygulanmış olarak karşımıza çıkacaktır.
 
-In both cases, we have the core principle of keeping `render()` a pure method. What does that mean? That means we shouldn't call `setState()`, query the Native UI or anything else that can mutate the existing state of the application. The reason why is if we do this kind of interaction in `render()`, then it will kickoff another render pass. Which once again, triggers `render()` which then does the same thing... infinitely.
+Diğer yaşan döngüsü metodlarının aksine, ´render´ metodu birden fazla yaşam döngüsü aşamasında karşımıza çıkar. Bileşenin doğum aşasında çalıştırıldığı gibi, gelişme aşamasında da birçok kez çalıştırılır.
 
-The React development mode[^1] is generally great at catching these kinds of errors and will yell at you if you do them. For example, if we did something silly like this
+Her durumda, temel kural ´render´ metodunun pür (pure) fonksiyon olarak kalması gerektiğidir. Yani `render` metodu bileşenin `state`'ine etki etmemeli, Native UI katmanı üzerinde bir değişiklik yapmamalı, yani kısaca genel uygulama `state`'ini mutate etmemelidir. Eğere `render` metodu içerisinde `setState` metoduna izin verilse ve bileşen `state` değeri değiştirilebilse idi, bu değişim de bir `render` tetikleyeceğinden sonsuz bir döngüye girilmiş olurdu. 
 
-```javascript
+`render` metodu içerisinde `setState` çağrılması gibi durumlarda React bize uyarı verir. Örneğin,  
+
+```jsx
 render() {
-  // BAD: Do not do this!
+  // bunu yapmayın!
   this.setState({ foo: 'bar' });
   return (
     <div className={ classNames('person', this.state.mode) }>
@@ -19,7 +20,7 @@ render() {
 }
 ```
 
-React would log out the following statement:
+Bu durumda React, browser konsolunda bir uyarı mesajı gösterecektir:
 
 > Warning: setState(...): Cannot update during an existing state transition (such as within `render`). Render methods should be a pure function of props and state.
 
