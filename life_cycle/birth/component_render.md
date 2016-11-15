@@ -20,38 +20,40 @@ render() {
 }
 ```
 
-Bu durumda React, browser konsolunda bir uyarı mesajı gösterecektir:
+Bu durumda React, browser konsolunda bir uyarı mesajı vererek, mevcut bir `state` değişimi esnasında `state`'in güncellenemeyceğini belirtir. Render metodu bileşen `props` ve `state` değerlerine bağlı bir pür fonksiyon olmalıdır.
 
 > Warning: setState(...): Cannot update during an existing state transition (such as within `render`). Render methods should be a pure function of props and state.
 
-## Native UI access in `render()` is often fatal
-React will also warn you if you try to access the Native UI elements in the render pass.
+## `render()` metodu içerisinde Native UI katmanına erişim
+Eğer `render()` metodu içerisinden Native UI katmanına erişmeye çalışırsak, bu durumda da React bize bir uyarı mesajı verecektir.
 
 ```javascript
 render() {
-  // BAD: Don't do this either!
+  // bunu da yapmayın!
   let node = ReactDOM.findDOMNode(this);
   return (
-    <div className={ classNames('person', this.state.mode) }>
-      { this.props.name } (age: { this.props.age })
+    <div className={ classNames('kisi', this.state.durum) }>
+      { this.props.isim } (age: { this.props.yas })
     </div>
   );
 }
 ```
 
+Uyarı mesajı
+
 > VM943:45 Warning: Person is accessing getDOMNode or findDOMNode inside its render(). render() should be a pure function of props and state. It should never access something that requires stale data from the previous render, such as refs. Move this logic to componentDidMount and componentDidUpdate instead.
 
-In the above example, it may seem safe since you are just querying the node. But, as the warning states, we might be querying potentially old data. But in our case, during the Birth phase, this would be a fatal error.
 
-> Uncaught Invariant Violation: findComponentRoot(..., .0): Unable to find element. This probably means the DOM was unexpectedly mutated (e.g., by the browser), usually due to forgetting a &lt;tbod&gt; when using tables, nesting tags like &lt;form&gt;, &lt;p&gt;, or &lt;a&gt;, or using non-SVG elements in an &lt;svg&gt; parent. Try inspecting the child nodes of the element with React ID `Person`.
+Burada da yine `render()` metodunun `pür` olması gerektiği kuralını ihlal ediyoruz. `findDOMNode()` metodu ile DOM üzerinde, bir önceki render'de oluşturulmuş bir `bilgi`yi sorguluyor olabiliriz. Hatta ki ilk `render()` metodunda bu sorgulama yapılıyor ise, henüz bu bileşen için DOM üzerinde birşey oluşturulmadığı için sorgulama sonucu hata döndürecektir. 
 
-This is one of those cases where the React error doesn't clearly point to the cause of the problem. In our case we didn't modify the DOM, so it feels like an unclear and potentially misleading error. This kind of error can cause React developers a lot of pain early on. Because we instinctually look for a place where we are changing the Native UI.
+> Uncaught Invariant Violation: findComponentRoot(..., .0): Unable to find element. This probably means the DOM was unexpectedly mutated (e.g., by the browser), usually due to forgetting a &lt;tbod&gt; when using tables, nesting tags like &lt;form&gt;, &lt;p&gt;, or &lt;a&gt;, or using non-SVG elements in an &lt;svg&gt; parent. Try inspecting the child nodes of the element with React ID `Kisi`.
 
-The reason we get this error is because during the first render pass the Native UI elements we are trying to access do not exist yet. We are essentially asking React to find a DOM node that doesn't exist. Generally, when `ReactDOM` can't find the node, this is because something or someone mutated the DOM. So, React falls back to the most common cause. 
+Madem ki `render()` metodu pür bir fonksiyon olmalıdır, ihtiyacı olan tek bilgi bileşenin o andaki `props` ve `state` değerleridir. Bunlar dışında hiçbir `veri` render esnasında kullanılmamalıdır.
 
-As you can see, having an understanding of the Life Cycle can help troubleshoot and prevent these often un-intuitive issues.
+İkinci mesajda görüleceği üzere henüz ilgili DOM elemanı oluşturulmadığı için DOM node'u bulunamamıştır.
 
-***Up Next:***[ Managing Children Components and Mounting](managing_children_components_and_mounting.md)
+
+***Gelecek Bölüm:***[Çocuk bileşenlerin yönetimi ve Mounting](managing_children_components_and_mounting.md)
 
 ---
-[^1] These warnings come out of the development mode in React. You can also use the [React Development Tools](https://github.com/facebook/react-devtools) to help debug and explore React components.
+[^1] Bu uyarılar React, `development` (geliştirme) modunda çalıştırıldığında alınır. React bileşenlerinin iç durumlarını (`state` ve `props` değerleri) incelemek için çok yararlı [React geliştirme araçları](https://github.com/facebook/react-devtools) browser eklentisini kullanabilirsiniz. 

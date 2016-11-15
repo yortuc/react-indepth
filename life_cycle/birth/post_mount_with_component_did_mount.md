@@ -1,40 +1,47 @@
-# Post-mount with `componentDidMount()`
- The last step in the Birth/Mount life cycle phase is our post-mount access via `componentDidMount()`. This method is called once all our children Elements and our Component instances are mounted onto the Native UI. When this method is called we now have access to the Native UI (DOM, UIView, etc.), access to our children `refs` and the ability to *potentially* trigger a new render pass.
- 
-## Understanding call order
- Similar to `componentWillMount()`, `componentDidMount()` is only called one time. Unlike our other Birth/Mount methods, where we start at the top and work down, `componentDidMount()` works from the bottom up. Let's consider the following Component/Element Tree again:
- 
+# `componentDidMount()` metodu ve Mount sonrası
+
+Bileşenin doğum yaşam döngüsü sürecinin son aşaması `componentDidMount()` metodudur. Bu metod, bileşen ve sahip olduğu tüm çocuk (alt) bileşenler render edilip Native UI katmanına mount edildikten sonra sadece tek bir kez çalıştırılır. Metod içerisinde artık Native UI katmanındaki elemanlara (DOM üzerine çalışılıyor ise html elementlerine) erişebilir, çocuk elementleri `ref` tanımlamaları ile sorgulayabiliriz. 
+
+ The last step in the Birth/Mount life cycle phase is our post-mount access via `componentDidMount()`. 
+
+## Çalışma sırası
+
+`componentWillMount()` metodunda olduğu gibi, `componentDidMount()` metodu da bileşenin yaşam döngüsü boyunca sadece tek bir kez çalıştırılır. En üst bileşenden başlanarak alt bileşenlere doğru sırayla çağrılan diğer doğum metodlarının aksine (örneğin render metodu öncelikle üst bikeşen için daha sonra sıra ile alt bileşenler için çalıştırılır), bu metot en alt bileşenden başlanarak yukarı doğru çalıştırılır. Örnek olarak şu öğe ağacını gözönüne alalım:
+
  ![React Element Tree](react-element-tree.png)
 
- When we begin the Birth phase, we process `render()` in this order: 
+Doğum süreci başladığında, `render()` metodu şu sıra ile çalışacaktır:
  
  ```
  A -> A.0 -> A.0.0 -> A.0.1 -> A.1 -> A.2.
  ```
  
- With `componentDidMount()` we start at the end and work our way back.
+`componentDidMount()` metodu ise en alt bileşenden başlayarak yukarı doğru sıra ile çalışacaktır. 
  
  ```
  A.2 -> A.1 -> A.0.1 -> A.0.0 -> A.0 -> A
  ```
- 
- By walking backwards, we know that every child has mounted and also run its own `componentDidMount()`. This guarantees the parent can access the Native UI elements for itself and its children.
-  
- Let's consider the following three components and their call order.
 
-**GrandChild.js**
+Öcelikle alt bileşenler render'i tamamlayıp Native UI katmanına mount olacak ki, bir üstteki bileşen de render işlemini tamamlayıp mount olabilsin ve kendi `componentDidMount()` metodu çalışsın.
+
+Geriye doğru ilerlerken, biliyoruz ki her alt bileşen mount oldu ve kendi `componentDidMount()` metodunu çalıştırdı. Bu sayede üst bileşen `componentDidMount()` metodunu çalıştırdığında, tüm alt bileşenlerin Native UI katmanına mount olmuş ve ulaşılabilir olması garanti edilmiş olur.
+
+Üç bileşeni ve çağrılma sıralarını inceleyelim. 
+
+**Torun.js**
 ```javascript
 /** 
- * GrandChild
- * It logs the componentDidMount() and has a public method called value.
+ * Torun
+ * componentDidMount() metodunu loglar ve 
+ * `value` isimli bir metoda sahiptir
  */ 
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-export default class GrandChild extends React.Component {
+export default class Torun extends React.Component {
 
   componentDidMount() {
-    console.log('GrandChild did mount.');
+    console.log('Torun mount oldu.');
   }
 
   value() {
@@ -44,7 +51,7 @@ export default class GrandChild extends React.Component {
   render() {
     return (
       <div>
-        GrandChild
+        Torun
         <input ref="input" type="text" defaultValue="foo" />
       </div>
     );
@@ -52,83 +59,83 @@ export default class GrandChild extends React.Component {
 }
 ```
 
-**Child.js**
+**Cocuk.js**
 ```javascript
 /*
- * Child
- * It logs the componentDidMount() and has a public method called value,
- * which returns the GrandChild value.
+ * Cocuk
+ * componentDidMount() metodunu loglar ve `value` isimli bir metoda sahiptir.
+ * `value` metodu torun `value` değerini döndürür.
  */
 import React from 'react';
-import GrandChild from './GrandChild';
+import GrandChild from './Torun';
 
-export default class Child extends React.Component {
+export default class Cocuk extends React.Component {
 
   componentDidMount() {
-    console.log('Child did mount.');
+    console.log('Cocuk mount oldu.');
   }
 
   value() {
-    return this.refs.grandChild.value();
+    return this.refs.torun.value();
   }
 
   render() {
     return (
       <div>
-        Child
-        <GrandChild ref="grandChild" />
+        Cocuk
+        <Torun ref="torun" />
       </div>
     );
   }
 }
 ```
 
-**Parent.js**
+**Anne.js**
 ```javascript
 /*
- * Parent
- * It logs the componentDidMount() and then logs the child value()
+ * Anne
+ * componentDidMount() ve çocuk `value()` loglar
  * method.
  */
 import React from 'react';
-import Child from './Child';
+import Cocuk from './Cocuk';
 
-export default class Parent extends React.Component {
+export default class Anne extends React.Component {
 
   componentDidMount() {
-    console.log('Parent did mount.');
-    console.log('Child value:', this.refs.child.value());
+    console.log('Anne mount oldu.');
+    console.log('Cocuk değer:', this.refs.cocuk.value());
   }
 
   render() {
     return (
       <div>
-        Parent
-        <Child ref="child" />
+        Anne
+        <Cocuk ref="cocuk" />
       </div>
     );
   }
 }
 ```
 
-When we mount `<Parent />` in our application we get the following in the browser console:
+`<Anne />` bileşenini uygulamamızda render ettiğimizde, browser konsolunda şöyle bir çıktı elde ediyoruz:
 
 ```console
-GrandChild did mount.
-Child did mount.
-Parent did mount.
-Child value: foo
+Torun mount oldu.
+Cocuk mount oldu.
+Anne mount oldu.
+Cocuk değer: foo
 ```
 
-As you can see, the GrandChild's `componentDidMount()` was called first, followed by Child and then Parent. Because we are now mounted on the DOM and our children are created, the Parent can access its `refs` and the GrandChild can access its own DOM nodes. 
+Görüldüğü üzere ilk olarak Torun bileşenin `componentDidMount()` metodu çalıştırıldı, daha sonra Cocuk ve Anne. 
 
-## Useful Tasks
- The `componentDidMount()` method can be a helpful heavy lifter for our Components. One of the most common tasks is interacting with the Native UI. Unlike `componentWillMount()` or `render()` we can now fully interact with the Native stack.
- 
- For example, we may need to make changes to our current state based on how the Native UI laid out our content. We may need to figure out the current width/height of our children or our own instance. This is especially helpful in the browser where CSS layout drives a lot of our DOM calculations.
- 
- Another useful task is setting up 3rd party UIs. For example, if we wanted to use a library like [C3.js](http://c3js.org/) or the [Date Range Picker](http://www.daterangepicker.com/), this is where we would initialize our UI libraries.
- 
+## Kullanım alanları
+
+Native UI katmanıyla etkileşime geçmek için çok faydalı bir metod olduğunu yukarıda inceledik. Örnek olarak Native UI katmanı bileşenlerin çıktısını nasıl verdiğine bakarak (örneğin bir bileşenin genişliğini/yüksekliğini ölçerek) uygulama `state`ini güncellemek isteyebiliriz. Özellikle browser ile çalışırken bir çok yerleşimi CSS ile yaptığımızdan, JS tarafındaki bileşen kendi ebatlarını bilmiyor olabilir. Bu durumda ölçümler yaparak, bileşen `state`ini `componentDidMount()` metodunda güncelleyebiliriz. 
+
+Bir diğer kullanım alanı da 3. parti kütüphane ve framework'lerin konfigüre edilmesi olarak gösterilebilir. Örnek olarak bir jQuery pluginini React bileşeni içerisinde kullanmak isteyebiliriz. Bilindiği gibi jQuery eklentileri etkin olabilmesi için genellikle belirli DOM elemanlarının seçilmesine ihtiyaç duyarlar. `componentDidMount()` metodunda bu gerekli DOM elemanlarına erişebilir ve gerekli yapılandırmayı gerçekleştirebiliriz.
+
+Örnek olarak [C3.js](http://c3js.org/) veya [Date Range Picker](http://www.daterangepicker.com/) gibi 3. parti eklentileri yapılandırabiliriz. 
  **Chart.js**
  
 ```javascript
@@ -140,7 +147,7 @@ export default class Chart extends React.Component {
 
   componentDidMount() {
     this.chart = c3.generate({
-      bindto: ReactDOM.findDOMNode(this.refs.chart),
+      bindto: ReactDOM.findDOMNode(this.refs.chart_div),
       data: {
         columns: [
           ['data1', 30, 200, 100, 400, 150, 250],
@@ -152,24 +159,25 @@ export default class Chart extends React.Component {
 
   render() {
     return (
-      <div ref="chart"></div>
+      <div ref="chart_div"></div>
     );
   }
 }
 ```
 
- In the above example, we leverage `componentDidMount()` to generate our chart, bind it to the DOM using `refs` and then pass in data.
+Yukarıdaki örnekte, `componentDidMount()` metodundan yararlanarak chart eklentisini yapılandırıyoruz. Bu işlem için `c3` kütüphanesi bir DOM elemanına (div) ihtiyaç duyuyor. Bu div'i de bileşen `render()` metodunda oluşturup, bir referansını saklıyoruz (`chart_div`). Daha sonra da bu referans ile ilgili DOM elemanını bularak `c3` yapılandırmasında kullanıyoruz. 
 
- When integrating 3rd party libraries, we often need to bind to events, such as the user interacting with the Chart. This is where we would set up our listeners post-library initialization. We can also add more global listeners here, if we did not want to setup the listeners in the `componentWillMount()` call.
+Genellikle 3. parti eklentileri kullanacağımız zaman olay yönetimiyle de ilgilenitiz. Örneğin kullanıcının chart ile etkileşime geçmesi gibi. `componentDidMount` metodu bahsi geçen `event`lere de kaydolmak için en doğru yerdir.
 
-## Starting another render pass [^1]
- There are some unique situations where we may have a second render immediately after Birth/Mount. This is not a common situation and generally occurs when we have to change our current state based on the Native UI Layout. This could be calculating dynamic row height or column widths in a data table. It could be having to re-position the component's children based on how they are sized the first time.
+
+## Yeni bir render tetikleme [^1]
+
+Bazı özel durumlarda ilk renderden sonra anında tekrar render işlemine gerek duyabiliriz. Bu sık karşılaşılan bir durum değildir ve genellikle bileşen `state` değerinin, bileşenin ilk render'den sonra nasıl Native UI katmanında görüntülendiğiyle alakalıdır. Örnek olarak bir data-table'de dinamik olarak satır yüksekliği ve stun genişliği hesaplanması verilebilir. Ya da ilk seferde ekran üzerinde nasıl konumlandıklarına bağlı olarak çocuk bileşenlerin tekrar konumlandırılması gerekliliği olabilir.  
+
+Eğer böyle bir ihtiyaç duyarsanız, `componentDidMount()` metodu içerisinde `this.setState()` veya `forceUpdate()` metodlarını çağırabilirsiniz. Eğer bileşen `state`ini günceller ya da `forceUpdate()` metodunu çağırırsanız (daha sonra bu konuya değineceğiz), bileşen tekrar baştan bir render sürecine girer ve [Gelişme/Güncelleme safhası](../growth_update_indepth.md)'ına geçer. `componentDidMount()` yalnızca bir kere çağrıldığı için, sonsuz döngüye girilme ihtimali yoktur. 
  
- If you require this kind of functionality, you have the ability to call `this.setState()` or `forceUpdate()` in your `componentDidMount()`. If you change state or force an update (more on this feature later), your Component will begin another render pass and enter the [Growth/Update Phase](../growth_update_indepth.md). Because `componentDidMount()` is called only once, we don't have to worry about this method causing an infinite loop. But, this process can lead to issues down the road if you do not take the time to walk through all the potential ramifications of multiple renders.
- 
-***Up Next:*** [Growth/Update Phase In-Depth](../growth_update_indepth.md)
+***Gelecek Bölüm:*** [Gelişme/Güncelleme safhası](../growth_update_indepth.md)
 
 ---
- 
- [^1] Multiple render passes opens the door for serious performance issues. Proceed with extreme caution!
+[^1] Bu noktada dikkat edilmez ise, yine de birden fazla kez aynı bileşen render edilebilir. Bu da zaman zaman performans sorunlarına sebep olabilir.
 

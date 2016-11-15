@@ -1,15 +1,14 @@
-# Managing Children Components and Mounting
-Now that we have completed the first render pass, our `render()` method returns a single React Element. This Element may have children elements. Those children may also have children, and so on.
+# Çocuk bileşenlerin yönetimi ve Mounting
 
-![React Element Tree](react-element-tree.png)
+İlk `render()` metodunu geçtik ve çıktı olarak tek bir React öğesi (`ReactElement`) elde ettik. Bu öğe, tersine bir ağaç yapısı gibi alt öğeler de barıdırabilir. Ve bu öğeler de kendi altında öğeler barındırabilir.
 
-With the potential for an *n* depth tree of Elements, each of the Elements need to go through their own entire life cycle process. Just like the parent Element, React creates a new instance for each child. They go through construction, default props, initial state, `componentWillMount()` and `render()`. If the child has children, the process starts again...all the way down.
+![React öğesi ağacı](react-element-tree.png)
 
-One of the most powerful concepts in React is the ability to easily compose complex layout through nesting of children. It is encouraged to keep your Components as *'dumb'* as possible. The idea is to only have container[^1] components managing higher level functionality.
+Bu şekildeki ağaç şeklinde bir React öğesi yapısı için de, her bir öğe kendi yaşam döngüsünü geçirmek zorundadır. Üst öğe gibi, her alt öğe için de React birer bileşen örneği (instance) oluşturur. Onlar da yapılandırma, `props` ve `state` ilk değerlerinin atanması, `componentWillMount()` ve `render()` aşamalarınandan geçer. Eğer çocuk bileşen de çocuklara sahip ise, en alt seviyeye inilene kadar bu işlem devam eder. 
 
-Because this is the preferred way of development, this means we will have a lot of smaller components that also have their own life cycle. Keep this in mind as we continue through the life cycle, because every Component will follow the same pattern.
+React'ın en güçlü yanlarından birisi de bu şekilde "nested" (iç içe geçmiş) yapılar ile kolayca karmaşık arayüzlerin oluşturulabilmesidir. Bileşenlerin mümkün olduğunca basit tutulması, buna karşılık bu basit bileşenlerin birlikte etkili kullanımı ile (composing) arayüzlerin oluşturulması tavsiye edilmektedir. [^1]
 
-***Up Next:*** [Post-Mount with `componentDidMount()`](post_mount_with_component_did_mount.md)
+***Gelecek Bölüm:*** [Mount sonrası ve `componentDidMount()` metodu](post_mount_with_component_did_mount.md)
 
 ---
 
