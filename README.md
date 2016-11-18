@@ -20,7 +20,7 @@ Amaç, React ile arayüz geliştme sürecinin detaylı olarak incelenmesidir. Re
        * [Mount kavramı ve çocuk bileşenler](life_cycle/birth/managing_children_components_and_mounting.md)
        * [componentDidMount() ile mount sonrası](life_cycle/birth/post_mount_with_component_did_mount.md)
    * [Bileşen gelişim dönemi](life_cycle/growth_update_indepth.md)
-       * [componentWillReceiveProps() ile bileşen güncelleme](life_cycle/update/component_will_receive_props.md)
+       * [Güncelleme ve `componentWillReceiveProps()` metodu](life_cycle/update/component_will_receive_props.md)
        * [shouldComponentUpdate() kullanımı](life_cycle/update/using_should_component_update.md)
        * [componentWillUpdate() metodu](life_cycle/update/tapping_into_componentwillupdate.md)
        * [Yeniden render etme ve çocuk bileşen güncellemeleri](life_cycle/update/rerendering_and_children_updates.md)

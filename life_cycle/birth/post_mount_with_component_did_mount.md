@@ -1,8 +1,6 @@
 # `componentDidMount()` metodu ve Mount sonrası
 
-Bileşenin doğum yaşam döngüsü sürecinin son aşaması `componentDidMount()` metodudur. Bu metod, bileşen ve sahip olduğu tüm çocuk (alt) bileşenler render edilip Native UI katmanına mount edildikten sonra sadece tek bir kez çalıştırılır. Metod içerisinde artık Native UI katmanındaki elemanlara (DOM üzerine çalışılıyor ise html elementlerine) erişebilir, çocuk elementleri `ref` tanımlamaları ile sorgulayabiliriz. 
-
- The last step in the Birth/Mount life cycle phase is our post-mount access via `componentDidMount()`. 
+Bileşenin doğum yaşam döngüsü sürecinin son aşaması `componentDidMount()` metodudur. Bu metod, bileşen ve sahip olduğu tüm çocuk (alt) bileşenler render edilip Native UI katmanına mount edildikten sonra sadece tek bir kez çalıştırılır. Metod içerisinde artık Native UI katmanındaki elemanlara (DOM üzerine çalışılıyor ise html elementlerine) erişebilir, çocuk elementleri `ref` tanımlamaları ile sorgulayabiliriz.
 
 ## Çalışma sırası
 

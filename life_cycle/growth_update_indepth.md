@@ -1,58 +1,62 @@
-# Growth/Update In-depth
- Once our Component is mounted in the Birth phase, we are prepped and ready for the Growth/Update phase. The Growth phase is where a Component spends most of its time. Here we get data updates, act on user or system actions and provide the overall experience for our application.
- 
- The Growth phase is triggered in three different ways: changing of `props`, changing of `state` or calling `forceUpdate()`. The changes that are made affect how the Update phase is managed. We will discuss each of these changes in depth as we walk through the entire Growth process.
- 
- In this Section, we will dive into the different methods. We'll examine the order of the methods called and how they affect the overall process. We will also discuss what tasks are best handled during each method and discuss application optimization.
- 
- ## Starting Update: Changing Props
-  As mentioned earlier, we have three ways to start the Growth/Update phase. The first way is when the component's `props` update. This occurs when either the root Element (ex: `ReactDOM.render(<MyComponent data={ dataVaule } />, ...)` has the `props` value changed or the parent of the Component's `prop` changes.
-  
-  From a Component's instance perspective (such as `<Person name="Bill" />`) the passed in props are immutable. In other words, the Person instance cannot update the value name internally. In fact, if you try you will get an Error in React.
-  
-  ```javascript
-  render() {
-    // BAD: DON'T DO THIS!
-    this.props.name = 'Tim';
-    return (
-      <div className={ classNames('person', this.state.mode) }>
-        { this.props.name } (age: { this.props.age })
-      </div>
-    );
-  }
-  ```
+# Bileşen gelişim dönemi
+
+Bileşen bir kere doğup, bazı aşamalardan geçip, Native UI katmanı üzerne `mount` olduktan sonra, gelişme ve güncelleme safhasına geçer. Bileşenin yaşamının büyük kısmı bu evrede geçer. Bileşen `state` değerinin güncellenemesi, kullanıcı veya sistem ile etkileşime geçilmesi ve uygulamanın genel işlevinin yerine getirilmesi hep bu gelişme ve güncelleme evresinde gerçekleşir.
+
+Gelişim süreci üç farklı şekilde tetiklenir.
+
+-`props` değerinin değişmesi
+-`state` değerinin değişmesi 
+-`forceUpdate()` metodunun çağrılması
+
+Güncellemenin yönetilme şekli de, yukarıdaki yöntemlerden hangisinin kullanıldığına göre değişkenlik gösterir. Bu değişimleri tek tek inceleyeceğiz.
+
+Bu bölümde gelişim ve güncelleme evresinde çalıştırılan metotları, çağrılma sıralarını ve de hangi amaçla kullanılabileceklerini inceleceğiz. Genel uygulama optimizasyonuyla ilgili de birkaç öneri sunacağız.
+
+## Güncellemenin başlatılması : `props` değişimi
+
+Bileşeni güncellemenin ilk yöntemi `props` değerini değiştirmektir. Bir bileşen için düşünüldüğünde, kendisine verilen `props` değeri (örnek: `<Kisi isim="Ata" />`) `immutable`dır. Diğer bir değişle bileşen kendisi bu değeri değiştiremez. Eğer bileşen içerisinden `props` değerini değiştirmeyi denerseniz bir hata alırsınız.
+
+```javascript
+render() {
+  this.props.yas = 32;  // bunu yapmayın!
+  return (
+    <div>
+      { this.props.isim } (yaş: { this.props.yas })
+    </div>
+  );
+}
+```
   
 > TypeError: Cannot assign to read only property 'name' of object '#&lt;Object&gt;'
 
-Because props are immutable by the Component itself, the parent must provide the new values. When new props are passed in via root or the parent, this starts the Update phase.
+Bileşen açısından `props` değeri değiştirilemez olduğu için, bileşeni yöneten üst bileşen yeni bir `props` değeri göndermek zorundadır. Üst bileşen tarafından yeni `props` değeri gönderildiğinde güncelleme evresi başlamış olur.
 
-## Starting Update: `setState()`
- Similar to changing `props`, when a Component changes its state value[^1] via `this.setState()`, this also triggers a new Update phase. For a lot of React developers, the first major (and to be honest ongoing) challenge is managing state in Components. State itself can be a controversial topic in the community. Many developers avoid state at all cost. Other systems, such as [MobX](http://mobxjs.github.io/mobx/), are in essence trying to replace it. Many uses of state can fall into different anti-patterns, such as transferring `props` into `state`[^2].
- 
- Fundamentally, state can be a tricky and confusing topic. When do we use state? What data should or shouldn't be stored in state? Should we even use state at all? To be honest, this is a topic that we are still trying to grapple with ourselves.
- 
- Keeping that in mind, it is still important to understand how state works in React. We will continue to discuss state in-depth and how the mechanics work. We will try to share best practices that we have found, but in general what is good today will probably be bad tomorrow.
- 
- ### The asynchronicity of state
- Before we move on to the final way to start an update, we should talk a little about how state is managed in the internals of React. When developers first start using `setState()` there is an assumption that when you call `this.state` the values applied on the set will be available. This is not true. The `setState()` method should be treated as an asynchronous process [^3]. So how does `setState()` work?
- 
- When we call `setState()` this is considered a partial state change. We are not flushing/replacing the entire state, just updating part(s) of it. React uses a queuing system[^4] to apply the partial state change. Because we can set the state multiple times in a method chain, a change queue is constructed to manage all the various updates. Once the state change is added to the queue, React makes sure the Component is added to the dirty queue. This dirty queue tracks the Component instances that have changed. Essentially, this is what tells React which Components need to enter the Update phase later.
- 
- When working with state, it is very important to keep this in mind. A common error is to set state in one method and then later in the same synchronous method chain try to access the state value. This can sometimes cause tricky bugs, especially if you expose state values via public methods on your Component, such as `value()`. We will talk later about when `this.state` is finalized.
- 
-## Starting Update: `forceUpdate`
- There is one more way to kick off an Update phase. There is a special method on a Component called `forceUpdate()`. This does exactly what you think, it forces the Component into an Update phase. The `forceUpdate()` method has some specific ramifications about how the life cycle methods are processed and we will discuss this in-depth later on.
+## Güncellemenin başlatılması : `state` değişimi
 
+Bileşen kendi `state` değerini [^1] `this.setState()` metodu ile güncellediğinde de bileşen için güncelleme süreci başlamış olur. React ile geliştirme yapmadaki en büyük `challenge`, bileşen `state` değerinin yönetilmesidir. Birçok geliştirici bileşen için dahili bir `state` kullanmaktan tamamen kaçınmaya çalışmaktadır. Diğer bazı sistemler ([MobX](http://mobxjs.github.io/mobx/) gibi) `state` çalışma mantığını değiştirmeye çalışmaktadır. Gerçekten de `state` değeri dikkatli kullanılmadığında birçok anti-pattern'e meydan verebilir. `props` değerlerinin `state`e aktarılması gibi [^2].
+
+`state` kullanımı ile ilgili birçok soru akla gelebilir. Ne zaman kullanılmalı? Hangi data `state` içerisinde tutulmalı hangisi tutulmamalı? Ya da hiçbir zaman `state` kullanmamalı mı? Bu soruların kesin yanıtları henüz bulunmuş değil. 
+
+### `state`in asenkron olması
+
+React'in dahili bileşen `state`ini nasıl yönettiğine bakalım. `setState()` metodu çağrıldıktan hemen sonra bu güncellemelerin anında `this.state` değerine yansıması beklenirken, durum böyle değildir. 'setState()' metodu asenkron bir çağrı olarak değerlendirilmelidir [^3]. 
+
+`setState()` çağrıldığında, bu, kısmi bir güncelleme olarak değerlendirilir. Burada tüm `state` değerini değiştirmiyor sadece bazı kısımlarını güncelliyoruz. React burada kısmi güncellemeleri uygulamak için bir kuyruk yapısı kullanır [^4]. Herhangi bir metod içerisinde birden fazla kısmi güncelleme yapıyor olabiliriz. Bu güncellemeleri yönetebilmek için bir değişim-isteği kuyruğu oluşturulur. Bir kere değişim isteği kuyruğa girdiğinde, React bu bileşeni `kirli` (`dirty`) kuyruğuna alır. Bu kuyruk, dahili `state` değeri değişen bileşenleri izler. React bu sayede ileride hangi bileşen örneğinin güncelleme aşamasına geçeceğini bilir.
+
+Bir metot içerisinde `setState()` ile güncelleme yaptıkran sonra, aynı senkron metot zinciri içerisinde `this.state` ile bileşen `state` değerine erişmeye çalışmak yapılabilecek bir hatadır. Özellikle bileşen `state` değerini dış dünyaya public bir metot (örneğin `deger()`) vasıtası ile açtıysanız. Bu konuya tekrar bu bölümün sonunda döneceğiz. 
  
- Up Next: [Updating and `componentWillReceiveProps()`](update/component_will_receive_props.md)
+## Güncellemenin başlatılması : `forceUpdate()` metodu
+
+Bileşeni güncelleme aşamasına sokmanın bir diğer yolu da bileşen içerisinden `forceUpdate()` metodunu çağırmaktır. 
+ 
+***Gelecek bölüm***: [Güncelleme ve `componentWillReceiveProps()` metodu](update/component_will_receive_props.md)
  
  ---
  
- [^1] With Component state, we consider this internal functionality. In theory, we can access and even edit state outside of the instance but this is an anti-pattern. Accessing a Component's state from outside injects a lot of fragility into the system (pathing dependency, changing of internal values, etc.). Only a Component instance should `setState()` on itself. 
+[^1] Bileşen `state` değeri ile bileşenin kendi içerisinde, dış ortamdan izole olarak tuttuğu veriyi kastediyoruz. Esasında teorik olarak bir bileşenin `state` değerine dışarıdan erişebilir hatta değiştirebiliriz. Ancak bu bir anti-pattern'dir ve sisteme büyük bir kırılganlık getirecektir (bileşen bağımlılıklarının artması gibi). Bir bileşen ancak kendi `state` değeri üzerinde güncelleme yapmalıdır.
  
- [^2] Even though moving `props` to `state` [is considered an anti-pattern](https://facebook.github.io/react/tips/props-in-getInitialState-as-anti-pattern.html) there are a few use cases. The most common is having a `defaultValue` prop that becomes the internal `value` in state. We see this pattern with most Form elements in React; although there is a strong movement to get away from this and work with only [Controlled Components](https://facebook.github.io/react/docs/forms.html#controlled-components).
- 
- [^3] The React code comments recommend that *"... You should treat `this.state` as immutable. There is no guarantee that `this.state` will be immediately updated, so accessing `this.state` after calling [the setState] method may return the old value."*
- 
- [^4] React internal method `enqueueSetState()` to be exact.
- 
+[^2] `props` ile gelen verinin `state`'e aktarılması bir [anti pattern olarak görülse](https://facebook.github.io/react/tips/props-in-getInitialState-as-anti-pattern.html) de, birkaç kullanım alanı bulunabilir. En sık görüleni bir `defaultValue` değerinin bileşenin `state` değerine aktarılmasıdır. React içerisinde birçok form elemanında bu yapıyı görmek mümkündür. Son zamanlarda da bu yaklaşımdan uzaklaşılarak [Kontrollü form bileşenleri](https://facebook.github.io/react/docs/forms.html#controlled-components)ne doğru bir kayma görülmektedir.
+
+[^3] React kaynak kodunda bir yorum satırında verilen tavsiye şu şekildedir: `this.state` değeri immutable olarak düşünülmelidir. `this.state` değerinin anında güncelleneceği garanti edilemez. `this.setState()` metodu çalıştırıldıktan hemen sonra `this.state` değerine ulaşmaya çalışıldığında eski `state` değeri elde edilebilir.
+
+[^4] `enqueueSetState()` metodu.
