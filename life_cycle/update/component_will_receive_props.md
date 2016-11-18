@@ -1,86 +1,104 @@
-# Updating and `componentWillReceiveProps()`
- Now that we have discussed starting an Update, let's dive into the Update life cycle methods. The first method available to us is `componentWillReceiveProps()`. This method is called when `props` are passed to the Component instance. Let's dig a little deeper into what this means.
+# Güncelleme ve `componentWillReceiveProps()` metodu
+
+Bileşen için güncelleme evresinin nasıl başlayacağını bir önceki bölümde inceledik. Güncelleme evresinin ilk metodu `componentWillReceiveProps()` metodudur. Bu metot, bir bileşene yeni `props` değeri aktarıldığında çalıştırılır. `props` değeri aktarılması ne anlama gelir, inceleyelim.
  
- ## Passing `props`
- The most obvious example is when new `props` are passed to a Component. For example, we have a Form Component and a Person Component. The Form Component has a single `<input />` that allows the user to change the name by typing into the input. The input is bound to the `onChange` event and sets the state on the Form. The state value is then passed to the Person component as a `prop`.
+ ## Bileşen `props` aktarılması
+
+Örnek olarak bir Form bileşenimiz bir de Kisi isimli bileşenimiz olduğunu varsayalım. Form bileşeni bir `<input />` html elementi ile kullanıcıdan veri alarak ekranda görülen `isim` değerini değiştirebilmektedir. Bu `input` elementi bir `onChange` eventi ile Form'un `state` değerini güncellemektedir. Bu `state` değeri daha sonra Kisi bikeşenin bir `prop` olarak aktarılmaktadır.   
   
 ***Form.js***
 ```javascript
 import React from 'react';
-import Person from './Person';
+import Kisi from './Kisi';
 
 export default class Form extends React.Component {
   constructor(props) {
     super(props);
-    this.state        = { name: '' } ;
+    this.state        = { isim: '' } ;
     this.handleChange = this.handleChange.bind(this);
   }
 
   handleChange(event) {
-    this.setState({ name: event.currentTarget.value });
+    this.setState({ isim: event.currentTarget.value });
   }
 
   render() {
     return (
       <div>
         <input type="text" onChange={ this.handleChange } />
-        <Person name={ this.state.name } />
+        <Kisi name={ this.state.isim } />
       </div>
     );
   }
 }
 ```
 
- Any time the user types into the `<input />` this begins an Update for the Person component. The first method called on the Component is `componentWillReceiveProps(nextProps)` passing in the new `prop` value. This allows us to compare the incoming `props` against our current `props` and make logical decisions based on the value. We can get our current props by calling `this.props` and the new value is the `nextProps` argument passed to the method.
+Kullanıcı ne zaman `<input />` içerisine yazı girdiğinde bu işlem `Kisi` bileşeni için bir güncelleme başlatır. Kisi bileşeni üzerinde çalıştırılacak ilk metot `componentWillReceiveProps(nextProps)` olacaktır. Bu metot ile birlikte yeni isim değeri bir `prop` olarak bileşene aktarılmaktadır. Bu sayede yeni aktarılan `prop` değeri ile mevcut `prop` değerini karşılaştırıp, sonuca göre bazı aksiyonlar alabiliriz. Metot içerisinde bileşenin mevcut `props` değerine `this.props` ile ulaşabilirken, yeni aktarılmakta olan `props` değeri de metoda argüman olarak gönderilen `nextProps` değeridir. 
  
-### Updating State
- So why do we need `componentWillReceiveProps`? This is the first hook that allows us to look into the upcoming Update. Here we could extract the new props and update our internal state. If we have a state that is a calculation of multiple props, we can safely apply the logic here and store the result using `this.setState()`.
- 
-> Use this as an opportunity to react to a prop transition before render() is called by updating the state using this.setState(). The old props can be accessed via this.props. Calling this.setState() within this function will not trigger an additional render.
-> 
-> -- https://facebook.github.io/react/docs/component-specs.html#updating-componentwillreceiveprops
+### State'in güncellenmesi
 
+Peki neden `componentWillReceiveProps` metoduna ihtiyacımız var? Bu metot bize yeni bir `props` değeri aktarıldığını ve bileşenin bir güncelleme sürecine girebileceğini bilebilme imkanı verir. Burada ayrıca yeni `props` değerini okuyarak bileşenin mevcut `state` değerini de güncelleyebiliriz. Eğer birkaç `props` değeri üzerinden hesaplanan bir `state` değerimiz var ise, bu `state`'i burada yeni gelen `props` değeri üzerinden tekrar hesaplayarak `setState` metodu ile bileşenin 'state'ini güvenli bir şekilde güncelleyebiliriz.  
 
-### Props may not change
- A word of caution with `componentWillReceiveProps()`. Just because this method was called, does not mean the value of props has changed.
-  
-> To understand why, we need to think about what could have happened. The data could have changed between the initial render and the two subsequent updates ... React has no way of knowing that the data didn’t change. Therefore, React needs to call `componentWillReceiveProps`, because the component needs to be notified of the new props (even if the new props happen to be the same as the old props).
->  
->  -- See [(A =&gt; B) !=&gt; (B =&gt; A)](https://facebook.github.io/react/blog/2016/01/08/A-implies-B-does-not-imply-B-implies-A.html) 
+> Bu metot içerisinde çalıştırılacak bir `setState` çağrısı yeni bir `render()` tetiklemeyecektir. Bileşen içi bir `geçiş` (transition) durumunu yönetmek için bu metodu kullanabiliriz. Render metodu çalışmadan önce, yeni `props` değerlerini `state` içerisinde saklayıp, eski değerlere de `this.props` ile ulaşabiliriz. Eski ve yeni değerleri bu sayede `render` metodu içerisinde elde edip buna göre aksiyon alabiliriz.
 
-The core issue with `props` and `componentWillReceiveProps()` is how JavaScript provides mutable data structures. Let's say we have a prop called `data` and data is an Array. 
+### `Props` değşmemiş olasa da!
 
-```javascript
-// psuedo code
-this.setState({ data: [1, 2, 3] });
+`componentWillReceiveProps` metodunun çalışmış olması, bileşene aktarılan `props`un değiştiği anlamına gelmez. Yani aynı bileşen aynı `props` değeri ile tekrar render edilse dahi, kendisine bir `props` değeri aktarıldığı için bu metot yine çalışacaktır. `props` değerinin değişip değişmediğini kontrol etmek bileşenin kendisine kalmıştır. Ayrıca React'in, verilen `props` değerlerinin değişip değişmediğini bilmesine imkan yoktur. Örneğe göz atarsak,
 
-<MyComponent data={ this.state.data } />
+```jsx
+var mydata = {bar: 'içecek'};
+ReactDOM.render(<Bilesen data={mydata} />, container);
+
+mydata.bar = 'yemek'
+ReactDOM.render(<Bilesen data={mydata} />, container);
+
+mydata.bar = 'tatlı'
+ReactDOM.render(<Bilesen data={mydata} />, container);
 ```
 
-If somewhere in our app, a process updates the data array via `push()`, this changes the content of the data Array. Yet, the Array itself is the same instance. Because it is the same instance, React can not easily determine if the internal data has changed. So, to prevent a lot of issues, or having to do deep comparisons, React will push the same props down.
+burada `mydata` isimli bir nesne `prop` olarak bileşene aktarılarak, bileşen DOM üzerine render ediliyor. Örnekte toplam 2 kere `componentWillReceiveProps` metodu çağrılacaktır çünkü ilk render'da bu metot çalışmaz. Daha sonra `props` olarak verilen js objesi üzerinde değişiklikler yapılıyor ve bileşen tekrar render ediliyor. 
 
-With this being said, `componentWillReceiveProps()` allows us to check and see if new props are coming in and we can make choices based on the data. We just need to make sure we never assume the props are different in this method. Be sure to read the great post [(A =&gt; B) !=&gt; (B =&gt; A)](https://facebook.github.io/react/blog/2016/01/08/A-implies-B-does-not-imply-B-implies-A.html) by Jim Sproch.
+- Burada `data` isimli `prop` değerinin değişip değişmediğini `===` operatörü ile anlamak mümkün değil çünkü nesne aynı nesne ve hala aynı hafıza adresine işaret ediyor. Sadece iç değeri değişti. İç değer değişimi de ancak eski datanın derin bir kopyasını (`deep copy`) saklayarak ve yeni datanın iç değerleriyle tek tek karşılatırarak (`deep comparison`) mümkün olabilir ki bu da büyük nesnelerin karşılaştırılmasında performans problemlerine yol açacaktır.
 
-### Skipping this method
- Unlike the other methods in the Mounting phase, not all our Update phase methods are called every time. For example, we will skip `componentWillReceiveProps()` if the Update is triggered by just a state change. Going back to our Form.js example above:
+- mydata nesnesi closure'lar içerisinde, bazı değişkenleri hapsetmiş fonksiyonlara referanslar içeriyor olabilir. React'in bu closure'lara gözatması ve değişip değişmediklerini anlamasının bir yolu yoktur.
+
+- mydata nesnesi bir üst nesnenin render metodunda tekrar oluşturulan nesnelere referanslar içeriyor olabilir. Bu durumda nesnenin key-value değerleri değişmemiş olsa da, nesne baştan oluşturulduğu için farklı bir hafıza adresine işaret edecek ve kesinlikle değişmil olarak algılanacaktır. Gerçekten değişip değişmediğini anlamak için yine çok maliyetli bir işlem olan `deep comparison` yapmak gereklidir. Ayrıca bu nesne fonksiyonlar da içeriyor olabilir ki, iki fonksiyonu karşılaştırarak aynı olup olmadıklarını anlamanın güvenilir bir yolu yoktur.
+
+
+> Örnek için makaleye gözatabilirsiniz [(A =&gt; B) !=&gt; (B =&gt; A)](https://facebook.github.io/react/blog/2016/01/08/A-implies-B-does-not-imply-B-implies-A.html) 
+
+Buradaki temel sorun javascript'te `mutable` veriyapılarını nasıl davrandığı ile alakalıdır. Bu sefer de bir Array yapısını inceleyecek olur isel, 
+
+```javascript
+// temsili kod
+this.setState({ data: [1, 2, 3] });
+
+<Bilesen data={ this.state.data } />
+```
+
+Uygulamanın herhangibir yerinde data isimli array'i `push()` ile güncellediğimizde bu işlem Array'in içeriği değiştirir ancak kendisi değiştirmez. data array'ı yine aynı array örneği (instance) olarak kalacaktır. Aynı array örneği olarak kaldığı için de, içeriğinin değişip değişmediğini anlamak kolay bir işlem olmayacaktır. Çok ciddi performans sorunlarına yol açacak `deep comparison` gibi bir işlemden kaçınmak ve daha da büyük problemleri önlemek için, React her halükarda `componentWillReceiveProps` metodunu çalıştıracak ve `props` değerinin değişip değişmediğinin kararını bileşe bırakacaktır. 
+
+
+### Ne zaman çalışmaz?
+`componentWillReceiveProps()` metodu `state` değişimlerinde çalıştırılmaz.
  
  ```javascript
  // ...
  handleChange(event) {
-    this.setState({ name: event.currentTarget.value });
+    this.setState({ isim: event.currentTarget.value });
   }
 
   render() {
     return (
       <div>
         <input type="text" onChange={ this.handleChange } />
-        <Person name={ this.state.name } />
+        <Kisi isim={ this.state.isim } />
       </div>
     );
   }
 // ...
  ```
 
-When the user types in the `<input />` we trigger a `setState()` method. This will trigger an Update phase in our Form Component and the Person Component. For our Form Component, we did not receive new props, so `componentWillReceiveProps()` will be skipped.
+Kullanıcı `<input />` alanına metin girdiğinde `setState()` metodu çalışacaktır. Bu da, Form bileşeni üzerinde bir güncelleme evresi başlatacaktır. Form bileşeni için yeni `props` değeri aktarılmadığı için `componentWillReceiveProps` metodu da çalıştırılmayacaktır.
 
-***Up Next:*** [Using `shouldComponentUpdate()](using_should_component_update.md)
+***Gelecek Bölüm:*** [`shouldComponentUpdate()` metodu kullanımı](using_should_component_update.md)

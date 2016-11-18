@@ -51,7 +51,7 @@ Bileşeni güncelleme aşamasına sokmanın bir diğer yolu da bileşen içerisi
  
 ***Gelecek bölüm***: [Güncelleme ve `componentWillReceiveProps()` metodu](update/component_will_receive_props.md)
  
- ---
+---
  
 [^1] Bileşen `state` değeri ile bileşenin kendi içerisinde, dış ortamdan izole olarak tuttuğu veriyi kastediyoruz. Esasında teorik olarak bir bileşenin `state` değerine dışarıdan erişebilir hatta değiştirebiliriz. Ancak bu bir anti-pattern'dir ve sisteme büyük bir kırılganlık getirecektir (bileşen bağımlılıklarının artması gibi). Bir bileşen ancak kendi `state` değeri üzerinde güncelleme yapmalıdır.
  
