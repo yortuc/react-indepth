@@ -4,9 +4,9 @@ Bileşen bir kere doğup, bazı aşamalardan geçip, Native UI katmanı üzerne 
 
 Gelişim süreci üç farklı şekilde tetiklenir.
 
--`props` değerinin değişmesi
--`state` değerinin değişmesi 
--`forceUpdate()` metodunun çağrılması
+- `props` değerinin değişmesi
+- `state` değerinin değişmesi 
+- `forceUpdate()` metodunun çağrılması
 
 Güncellemenin yönetilme şekli de, yukarıdaki yöntemlerden hangisinin kullanıldığına göre değişkenlik gösterir. Bu değişimleri tek tek inceleyeceğiz.
 
