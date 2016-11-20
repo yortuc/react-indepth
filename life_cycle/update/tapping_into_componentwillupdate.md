@@ -1,16 +1,19 @@
-# Tapping into `componentWillUpdate()`
- Once we have determined that we do need to re-render in our Update phase, the `componentWillUpdate()` will be called. The method is passed in two arguments: `nextProps` and `nextState`. The method `componentWillUpdate()` is [similar to `componentWillMount()`](../birth/premounting_with_componentwillmount.md), and many of the same considerations and tasks are the same. The difference being that `componentWillUpdate()` is called every time a re-render is required, such as when `this.setState()` is called. Unlike `componentWillMount()` we get access to the next `props` and `state`.
- 
- Just like `componentWillMount()`, this method is called before `render()`. Because we have not rendered yet, our Component's access to the Native UI (DOM, etc.) will reflect the old rendered UI. Unlike `componentWillMount()`, we can access `refs` but in general this is not recommended because the refs will soon be out of date. There are use cases for accessing the Native UI here, such as starting animations.
+# `componentWillUpdate()` metodu
 
-The `componentWillUpdate()` is a chance for us to handle configuration changes and prepare for the next render. If we want to access the old props or state, we can call `this.props` or `this.state`. We can then compare them to the new values and make changes/calculations as required.
+Geçen bölümde bileşen için render edilip edilmeyeceğine karar vermiştik. Eğer bileşen render olacak ise `componentWillUpdate` metodu çalıştırılır. Bu metoda da yine `nextProps` ve `nextState` argümanları gönderilir. `componentWillUpdate` metodu [`componentWillMount()`](../birth/premounting_with_componentwillmount.md) metoduna benzemektedir ve birçok ortak noktası vardır. 
 
-Unlike `componentWillMount()`, we should not call `this.setState()` here. The reason we do not call `this.setState()` is that the method triggers another `componentWillUpdate()`. If we trigger a state change in `componentWillUpdate()` we will end up in an infinite loop [^1].
+Aradaki fark, `componentWillUpdate`, `this.setState()` çağrıldığında olduğu gibi her render öncesi çalıştırılır. Ayrıca `componentWillMount` metounda bileşen `state` ve `props` değerlerine ulaşabilmemiz mümkündür. 
 
-Some of the more common uses for `componentWillUpdate()` is to set a variable based on state changes (not using `this.setState()`), dispatching events or starting animations [^2].
+`componentWillUpdate` metodu render öncesinde çalıştırıldığı için, metot içerisinde Native UI katmanı sorgulanır ise, (örneğin bir div içerisindeki metni okuma), eski data elde edilecektir. Metot içerisinden `refs` değerine ulaşabiliyor olsak da, bu da yine, dolaylı olarak eski dataya ulaşmaya sebebiyet vereceği için çok önerilmemektedir.Ancak bazı istisnai durumlar da vardır. Örneğin animasyon başlatılması gibi durumlarda, render öncesi Native UI üzerine müdahale edilebilmektedir.
+
+`componentWillUpdate` metodu bize gelecek render öncesi hazırlık yapma imkanı tanır. Eğer eski `props` ve `state` değerlerine `this.props` ve `this.state` ile ulaşabilmek mümkündür. Gelecek render için de `nextProps` ve `nextState` değerleri de metoda React tarafından argüman olarak gönderilmektedir. Bu sayede değişen/değişmeyen değeler karşılaştırılarak gerekli hesaplamalar yapılabilir.
+
+`componentWillMount` metodunun aksine, `componentWillUpdate` içerisinde `this.setState()` çağrılmamalıdır. Çünkü `setState` metodu yeni bir `componentWillUpdate` metodu tetikleyecektir. Bu sayede sonsuz bir döngüye girilmiş olur [^1].
+
+Özetle `componentWillUpdate` metodunun en yaygın kullanım alanı state değişimi olduğunda bir değişkenin değerini değiştirme (`this.setState` kullanmadan), olay yayınlama (dispatching events) ve animasyon başlatma olarak gösterilebilir [^2].
 
 ```javascript
-// dispatching an action based on state change
+// state değişiminde aksiyon alma
 componentWillUpdate(nextProps, nextState) {
   if (nextState.open == true && this.state.open == false) {
     this.props.onWillOpen();
@@ -18,10 +21,10 @@ componentWillUpdate(nextProps, nextState) {
 }
 ```
 
-***Up Next:*** [Re-rendering and Children Updates](rerendering_and_children_updates.md)
+***Gelecek bölüm*** [Yeniden render etme ve alt bileşen güncellemeleri](rerendering_and_children_updates.md)
 
 ---
 
-[^1] In the previous version of this section we mistakenly said that you can safely call `setState()` in this method. Our assumption at the time was that a dirty flag was tracking the current state of the render pass, but this is not the case. It is technically possible to call `setState()` behind a conditional (such as when a prop/state changes) but it is **not** recommended and should be considered a no go. Special thanks to [Robin Venneman](https://github.com/robinvenneman) for catching this error and calling it to our attention!
+[^1] `componentWillUpdate` metodu içerisinde teknik olarak `setState` çalıştırılabilir. Bir `eğer` ifadesi kullanılarak burada sonsuz döngü oluşması engellenebilir. Ancak yine de önerilmemektedir ve kaçınılması gerekir. Bu uyarıyı yaptığı içi [Robin Venneman](https://github.com/robinvenneman)'a teşekkürler.
 
-[^2] An example of triggering CSS transitions in `componentWillUpdate()` and other discussions around this method's usages is over at this [StackOverflow response](http://stackoverflow.com/a/33075514/815544).
+[^2] `componentWillUpdate` içerisinde bir css animasyonu başlatılmasıyla ilgili örnek için şu [stackoverflow cevabına](http://stackoverflow.com/a/33075514/815544) bakabilirsiniz.
