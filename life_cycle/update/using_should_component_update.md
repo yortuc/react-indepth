@@ -1,16 +1,17 @@
-# Using `shouldComponentUpdate()`
- The next method in the Update life cycle is `shouldComponentUpdate()`. This method allows your Component to exit the Update life cycle if there is no reason to apply a new render. Out of the box, the `shouldComponentUpdate()` is a no-op that returns `true`. This means every time we start an Update in a Component, we will re-render.
+# `shouldComponentUpdate()` metodu
+
+Bu metot sayesinde bileşen, eğer yeni bir `render`e gerek yok ise güncelleme evresinden çıkarılabilmektedir. Varsayılan değer olarak `true` döndürür ve böylece bileşen her güncelleme evresinde yeniden render edilir. Hatırlarsanız React `props` değerlerini [derinlemesine karşılaştırmaz](https://facebook.github.io/react/blog/2016/01/08/A-implies-B-does-not-imply-B-implies-A.html). Eğer `props` veya `state` değişir ise, tekrar render edilmesi gerektiğine hükmeder. Ama eğer `props` ya da `state` gerçekten değişmedi ise, tekrar render etmeye gerek var mı?
+
+## Gereksiz render'leri önleme
+
+`shouldComponentUpdate` metodu ilk gerçek optimizasyonların yapılabildiği yaşam döngüsü metodudur. Metot içerisinde mevcut `props` ve `state` değerleri ile yeni aktarılan değerlere erişebiliriz. Burada kendi özellştirilmiş karşılaştırmamızı yapabilir ve bileşenin tekrar render edilip edilmemesi gerektiğine karar verebiliriz. 
+
+[PureRenderMixin](https://facebook.github.io/react/docs/pure-render-mixin.html) de tam olarak bu işi yapmaktadır. Mevcut `state` ve `props` değerlerini aktarılanlar (nextProps, nextState) ile karşılaştırarak gerçekten aynı olup olmadıklarını kontrol eder. Eğer değerlerde değişiklik var ise `true` döndür, değerler değişmedi ise `false` döndürerek gereksiz bir render önlenmiş olur.
  
- If you recall, React does [not deeply compare `props`](https://facebook.github.io/react/blog/2016/01/08/A-implies-B-does-not-imply-B-implies-A.html) by default. When `props` or `state` is updated React assumes we need to re-render the content. But, if the `props` or `state` have not changed, should we really be re-rendering?
- 
-## Preventing unnecessary renders
- The `shouldComponentUpdate()` method is the first real life cycle optimization method that we can leverage in React. We can look at our current and new `props` & `state` and make a choice if we should move on. [React's PureRenderMixin](https://facebook.github.io/react/docs/pure-render-mixin.html) does exactly this. It checks the current props and state, compares it to the next props and state and then returns `true` if they are different, or `false` if they are the same.
- 
+
  ```javascript
-/**
- * Performs equality by iterating through keys on an object and returning false
- * when any key has values which are not strictly equal between the arguments.
- * Returns true when the values of all keys are strictly equal.
+/*
+ * yüzeysel karşılaştırma ile iki nesnenin key ve value'ları aynı mı kontrol et
  */
 function shallowEqual(objA: mixed, objB: mixed): boolean {
   if (objA === objB) {
@@ -29,7 +30,7 @@ function shallowEqual(objA: mixed, objB: mixed): boolean {
     return false;
   }
 
-  // Test for A's keys different from B.
+  // A'nin `key` değerleri farklı mı?
   var bHasOwnProperty = hasOwnProperty.bind(objB);
   for (var i = 0; i < keysA.length; i++) {
     if (!bHasOwnProperty(keysA[i]) || objA[keysA[i]] !== objB[keysA[i]]) {
@@ -54,44 +55,46 @@ var ReactComponentWithPureRenderMixin = {
 };
  ```
  
-The above code is extracted from the React addon/source[^1]. The mixin defines the `shouldComponentUpdate(nextProps, nextState)` and compares the instance's `props` against the `nextProp` and the `state` against the `nextState`.
+Yukarıdaki kod React addon/source'tan alınmıştır [^1]. Buradaki mixin shouldComponentUpdate(nextProps, nextState) override edererek, mevcut ve gelecek `props` ile `state` değerlerini yüzeysel bir karşılaştırma ile (shallow comparizon) aynı olup olmadıklarını kontrol eder. Eğer aynı iseler, `false` döndürerek gereksiz bir render'in önüne geçmiş olur.
 
-### Mutability and pure methods
- It is important to note that the `shallowCompare` method simply uses `===` to check each instance. This is why the React team calls the mixin *pure*, because it will not properly check against mutable data.
- 
- Let's think back to our `data` props Array example where we use `push()` to add a new piece of data onto the Array.
+### Mutability ve pür metotlar
+Shallow yani yüzeysel karşılaştırma, iki nesnenin herbir key değerine karşılık gelen value değerlerini `===` operatörü ile karşılaştırır. Bu yüzden yukarıdaki mixin pür olarak isimlendirilmiştir çünkü mutable (değiştirilebilir) datayı sağlıklı bir şekilde karşılaştıramaz. Daha önce vermiş olduğumuz mutable array örneğini düşünelim:
  
 ```javascript
-// psuedo code
+// temsili kod
 this.setState({ data: [1, 2, 3] });
 
 <MyComponent data={ this.state.data } />
 ```
 
-The `shallowCompare` will see the current `props.data` as the same instance as the `nextProps.data` (`props.data === nextProps.data`) and therefore not render an update. Since we mutated the `data` Array, our code is **not** considered to be *pure*.
+`shallowCompare` metodu, bileşenin `props.data` değerini, bir sonraki güncellemede de yine aynı array olduğu için aynı olarak tanımlayacaktır. `data` isimli array'e eleman eklenmiş veya çıkarılmış olmasına bakmadan sadece `===` operatörü ile karşılaştırma yapacak ve aynı array olduğunu görecektir. Bu yüzden `props` değeri aynı olduğu için yeni bir render tetiklenmeyecektir. Eğer aynı arrayı, elemen ekleyip çıkardıktan sonra (mutate ettikten sonra) kullanmaya devam ediyorsak, yazdığımız ko pür olmaktan çıkmış demektir. 
 
-This is why systems like [Redux](http://redux.js.org/) requires pure methods for reducers. If you need to change nested data you have to clone the objects and make sure a new instance is always returned. This allows for `shallowCompare()` to see the change and update the component.
+[Redux](http://redux.js.org/) gibi sistemler bu yüzden pür fonksiyonlar kullanırlar. Eğer bir nesneyi (array olabilir) güncellemek istiyorsanız, öncelikle bunun bir kopyasını oluşturmalı ve güncellemeyi bu yeni nesne üzerinde yapmalısınız. Bu sayede  örneğin bir `state` nesnesinin içeriği değişiyor ise, kendisi (hafıza adresi) de değişeceği için, `===` operatörü ile kolayca aynı olup olmadıkları analaşılabilir. Ve yularıdaki gibi yüzeysel dahi olsa içerik karşılaştırmaya gerek kalmaz.
 
-Other ways to handle this is to use an immutable data system, such as [Immutable.js](https://facebook.github.io/immutable-js/). These data structures prevent developers from accidentally mutating data. By enforcing immutable data structures, we can leverage `shouldComponentUpdate()` and have it verify that our `props` and `state` have changed[^2].
+Diğer bir yöntem de, [Immutable.js](https://facebook.github.io/immutable-js/) gibi tamamen immutable (değiştirilemez) veri yapıları kullanmaktan geçer. Bu gibi kütüphaneler geliştiricileri değişkenleri yanlışlıkla mutate etmekten korurlar. Immutable veri yapıları kullanıldığında, nesneler için her değişik yapıldığında yeni bir nesne elde edersiniz. Yani bir array'e eleman eklediğinizde artık bambaşka bir array değeri (hafıza adresi) elde edersiniz. Bu saydede iki nesnenin değişip değişmediğini anlamak çok kolay bir hale gelir [^2].
 
-### Stop renders at the source
- If you recall our nested Component structure:
+### Render'i kaynağında önlemek
+
+Bileşen ağaç yapımızı hatırlayacak olursak:
  
- ![](../birth/react-element-tree.png)
+![](../birth/react-element-tree.png)
+
+Eğer **A** bileşeninde bir güncelleme olursa, tüm alt bileşenler de güncelleme sürecine girer. Bu şekilde ciddi performans sorunları ortaya çıkabilir. Çünkü **A** bileşenindeki her bir küçük de olsa güncelleme için belki birçok bileşeni güncelleme evresine sokabiliriz. `shouldComponentUpdate` metodu ile güncellenme kontrolünü **A** bileşeninde yaparsak, tüm bu gereksiz güncellemeleri önlemiş oluruz. Bu da ciddi bir performans optimizasyonu demektir. Ancak şu da unutulmamalıdır ki, eğer **A** bileşeni gerekli `props` değerlerini alt bileşenlere aktarmıyor ise, kendisi de render olmadığı içi, alt bileşenlerden bazıları gerekli render'leri de kaçırabilir.
+
+## `forceUpdate()`
+
+`componentWillReceiveProps` metodu gibi, `shouldComponentUpdate`metodu da `forceUpdate` çalıştırılarak atlanılabilir. `forceUpdate` metodu çalıştırıldığında, React bileşen örneğini `dirty` kuyruğuna eklerken üzerine bir `flag` eklenir. Bu sayede `shouldComponentUpdate` metodu çalıştırılmaz.  
  
- By default, if an Update is triggered in **A**, then all the other children will also go through their updates. This can easily cause a performance issue, because now we have many Components going through each step of the process.
- 
- By adding logic checks in `shouldComponentUpdate()` at **A** we can prevent all its children from re-rendering. This can improve overall performance significantly. But keep in mind, if you prevent **A** from passing props down to the children you may prevent required renders from occurring.
- 
-## Jump ahead with `forceUpdate()`
- Like `componentWillReceiveProps()`, we can skip `shouldComponentUpdate()` by calling `forceUpdate()` in the Component. This sets a flag on the Component when it gets added to the dirty queue. When flagged, `shouldComponentUpdate()` is ignored. Because we are forcing an update we are stating something has changed and the Component *must* re-render.
- 
- Since `forceUpdate()` is a brute force method, it should always be used with caution and careful consideration. You can easily get into an endless render loop if you keep triggering `forceUpdate` over and over. Troubleshooting infinite render loops can be very tricky. So, when reaching for `forceUpdate` keep all this in mind.
- 
-***Next Up:*** [Tapping into `componentWillUpdate()`](tapping_into_componentwillupdate.md)
+`forceUpdate` metodu zorlama bir metot olduğu için kullanırken çok dikkatli olmak gerekir. Sonsuz bir render döngüsü başlatmak olası tehlikeler içerisindedir. 
+
+***Gelecek bölüm:*** [`componentWillUpdate()` metodu](tapping_into_componentwillupdate.md)
 
 ---
 
-[^1] Captured from [React 15.0.1](https://github.com/facebook/react/blob/15-stable/src/addons/shallowCompare.js)
+[^1] [React 15.0.1](https://github.com/facebook/react/blob/15-stable/src/addons/shallowCompare.js) kaynak kodundan alınmıştır
 
-[^2] If you use Immutable.js, there is a [ImmutableRenderMixin library](https://github.com/jurassix/react-immutable-render-mixin) that provides both Object shallow compare and Immutable data comparison.
+[^2] Eğer Immutable.js kullanırsanız, [ImmutableRenderMixin library](https://github.com/jurassix/react-immutable-render-mixin) adında bir mixin var. Bu mixin ile hem yüzeysel nesne kontrolü hem de immutable data kontrolü yapılabilmektedir. 
+
+Daha önce bahsettiğimiz gibi, eğer kullandığınız veriyapısı immutable değil ise, değişip değişmediğini anlamak için içeriğini kontrol etmeniz gerekmektedir. Bu da yüzeysel (shallow) ya da derin (deep) karşılaştırmalar ile mümkün olur. Eğer nesne büyük ise, ciddi bir hesaplama maliyeti getirecektir. 
+
+Eğer veriyapısı immutable ise, içeriğini kontrol emeniz gerekmez. Her bir içerik değişiminde zaten değişken yeni bir değişkene kopyalanır ve farklı bir hafıza adresine işaret eder. Böylece javascript'in mutlak eşitlik `===` operatörüyle kolayca karşılaştırılabilirler. 
