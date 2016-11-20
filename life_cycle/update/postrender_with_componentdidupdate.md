@@ -1,18 +1,22 @@
-# Post-Render with `componentDidUpdate()`
- Continuing the trend of corresponding methods, the `componentDidUpdate()` is the Update version of [`componentDidMount()`](../birth/post_mount_with_component_did_mount.md). Once again, we can access the Native UI stack, interact with our `refs` and if required start another re-render/update [^1].
- 
- When `componentDidUpdate()` is called, two arguments are passed: `prevProps` and `prevState`. This is the inverse of `componentWillUpdate()`. The passed values are what the values were, and `this.props` and `this.state` are the current values.
- 
- ![](react-tree-update.png)
- 
- Just like `componentDidMount()`, the `componentDidUpdate()` is called after all of the children are updated. Just to refresh your memory, **A.0.0** will have `componentDidUpdate()` called first, then **A.0**, then finally **A**.
- 
-## Common Tasks
- The most common uses of `componentDidUpdate()` is managing 3rd party UI elements and interacting with the Native UI. When using 3rd Party libraries, like our Chart example, we need to update the UI library with new data.
- 
+# `componentDidUpdate()` metodu ve render sonrası
+
+`componentDidMount` metodunun güncelleme evresi için olanı şeklinde düşünülebilir. NativeUI katmanına ulaşabilir, `refs` ile render edilmiş olan Native elementlere müdahale edebilir ya da yeni bir `render` süreci başlatabiliriz. 
+
+`componentDidUpdate` çalıştırılırken `prevProps` ve `prevState` değerleri argüman olarak gönderilir. Argümanların isminde de anlaşılabileceği gibi bunlar eski değerlerdir. Mevcut `props` ve `state` değerlerine `this.props` ve `this.state` ile ulaşılabilir.
+
+![](react-tree-update.png)
+
+`componentDidMount` ve `componentDidUpdate` metotlarında olduğu gibi, ancak bileşenin tüm alt bileşenleri güncelleme işlemini tamamladıktan ve `componentDidUpdate` metotlarını çalıştırdıktan sonra bu metot çalıştırılır. 
+
+Hatılatmak gerekirse ilk olarak **A.0.0** bileşeninin `componentDidUpdate` metodu çalıştırılacak, daha sonra  **A.0** ve son olarak **A**.
+
+## Genel kullanım 
+
+En genel kullanım alanı NativeUI katmanına mudaha etmesi gereken 3. parti kütüphanelerin gerekli işlerini yapabilmesidir. 3. parti kütüphane kullanıldığında, daha önceki Chart örneğinde olduğu gibi kütüphanenin yeni data ile çizimi güncellemesi gerekir. 
+
 ```javascript
 componentDidUpdate(prevProps, prevState) {
-  // only update chart if the data has changed
+  // grafiği sadece veri güncellendi ise tekrar çiz
   if (prevProps.data !== this.props.data) {
     this.chart = c3.load({
       data: this.props.data
@@ -21,41 +25,44 @@ componentDidUpdate(prevProps, prevState) {
 }
 ```
 
-Here we access our Chart instance and update it when the data has changed[^2]. 
+Burada Chart örneğine erişiyor ve yeni data ile güncelliyoruz [2]. 
 
-### Another render pass?
-We can also query the Native UI and get sizing, CSS styling, etc. This may require us to update our internal state or `props` for our children. If this is the case we can call `this.setState()` or `forceUpdate()` here, but this opens a lot of potential issues because it forces a new render pass.
+### Diğer bir `render` çalıştırılması
 
-One of the worst things to do is do an unchecked `setState()`:
+Aynı zamanda burada NativeUI katmanını sorgulayarak element boyutlarını elde edebiliriz. Bu bilgi doğrultusunda bileşenin `state` değerini veya alt bileşenlerin `props` değerlerini güncellemek isteyebiliriz. Ancak burada direk olarak `setState` veya `forceUpdate` çalıştırır isek bileşen render edildikten sonra tekrar `componentDidUpdate` çalışacağı için sonsuz bir döngüye girilmiş olur. React geliştirmede yapılabilecek en büyük yanlışlardan birisi kontrolsüz bir `setState` kullanımıdır.
+
 
 ```javascript
 componentDidUpdate(prevProps, prevState) {
-  // BAD: DO NOT DO THIS!!!
+  // bunu yapmayın!
   let height = ReactDOM.findDOMNode(this).offsetHeight;
   this.setState({ internalHeight: height });
 }
 ```
 
-By default, our `shouldComponentUpdate()` returns true, so if we used the above code we would fall into an infinite render loop. We would render, then call did update which sets state, triggering another render.
+Varsayılan olarak `shouldComponentUpdate` `true` döndürür. Bu yüzden eğer yukarıdaki kodu denersek, sonsuz bir render döngüsüne girilir. 
 
-If you need to do something like this, then you can implement a check at  `componentDidUpdate()` and/or add other checks to determine when a re-size really occurred.
+Bunu bir kontrol ile önlemek mümkündür. Örneğin burada `componentDidUpdate` içerisinde, eğer ebatlar gerçekten değişmiş ise `state` ataması yapılması, döngüye girilmesini engeller.
 
 ```javascript
 componentDidUpdate(prevProps, prevState) {
-  // One possible fix...
   let height = ReactDOM.findDOMNode(this).offsetHeight;
+
+  // yükseklik değeri gerçekten değişti ise 
   if (this.state.height !== height ) {
     this.setState({ internalHeight: height });
   }
 }
 ```
 
-In general, this is not a common requirement and re-rendering has performance impacts for your Component and applications. Keep this in mind if you find yourself having to add a second render pass in `componentDidUpdate()`.
+Daha önce de belirtildiği gibi gereksiz render'ler uygulama performansını kötü olarak etkiler. Diğer bir render tetiklemeden önce bunun gerekli olup olmadığı iyi araştırılmalıdır.
 
-***Up Next:*** [Death/Unmounting In-depth](../death_unmounting_indepth.md)
+***Gelecek bölüm*** [Bileşen ölümü](../death_unmounting_indepth.md)
 
 ---
  
- [^1] This is a risky behavior and can easily enter an infinite loop. Proceed with caution!
+ [^1] Sonsuz döngüye girilebilir.
  
- [^2] This example assumes that the data is pure and not mutated.
+ [^2] Burada datanın immutable veya mutate edilmemiş olduğunu kabul ediyoruz.
+
+  

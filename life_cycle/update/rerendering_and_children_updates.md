@@ -1,18 +1,18 @@
-# Re-rendering and Children Updates
- Once again we return to `render()`. Now that our `props` and `state` are all updated[^1] we can apply them to our content and children. Just like the initial render,[ all the same rules and conditions apply](../birth/component_render.md). 
-  
- Unlike our first render, React performs different management when it comes to the generated Elements. The main difference is around the initialization phase and children Elements of the Component. 
- 
- ![](react-tree-update.png)
- 
- React compares the current Element tree structure returned from the `render()` method. React uses the generated keys (or assigned keys) to match each Element to a Component instance. React determines if we have new instances (**A.3**), removing instances (**A.0.1**) or are updating existing instances (**A**, **A.0**, **A.0.0**).
- 
- If the keys are the same, then React will pass the `props` to the existing instance, kicking off its Update life cycle. If we have added new Components or changed keys, React will create new instances from the Element data. These new Components then enter the Birth/Mounting phase.
- 
- ***Up Next:*** [Post-Render with `componentDidUpdate()`](postrender_with_componentdidupdate.md)
+# Yeniden render etme ve alt bileşen güncellemeleri
+
+Tekrar meşhur render metoduna geri döndük. Artık `props` ve `state` değerleri güncellendi [^1] ve bunları bileşen çıktısına ve alt bileşenlere yasıtabiliriz. Geliştirici açısıdan gerçekleşmek üzere olan bu render için tüm [ `ilk render` ](../birth/component_render.md) kuralları geçerlidir.
+
+Ancak ilk renderden farklı olarak, React'in bu render sürecini farklı yönetir. Bu farklılık bileşenlerin yapılandırılması (initialization) ve alt bileşenlerin yönetilmesinde görülür.
+
+![](react-tree-update.png)
+
+React, mevcut sanal dom ağaç yapısını (ReactElement 'lerden oluşan) ve render metoduyla oluşturulan yeni sanal dom ağaç yapısını karşılaştırır. Yeni bir ReactElement yaratılıp yaratılmadığını (**A.3**), kaldırılan öğeler olup olmadığını (**A.0.1**) veya mevcut olanlardan güncellemesi gerektiğini (**A**, **A.0**, **A.0.0**) hesaplar. 
+
+Eğer öğelerin `key` değerleri aynı ise, React yeni `props` değerlerini öğeye aktararak, öğeye karşılık gelen bileşen örneğini (Component instance) güncelleme evresine sokar. Eğer yeni öğeler eklenmil ya da mevcut olanların `key` değeri değişmiş ise React, öğe'ye bakarak bunlara karşılık gelen bileşen örneklerini oluşturur. Bu yeni oluşturulan bileşenler de Doğum sürecine sokulur. 
+
+
+ ***Gelecek bölüm:*** [`componentDidUpdate()` metodu ve render sonrası](postrender_with_componentdidupdate.md)
  
  ---
  
- [^1] As mentioned earlier, the asynchronicity nature of state is now fully applied and can be accessed safely.
- 
- 
+ [^1] Daha `state` değerinin güncellenme işleminin asenkron olduğunu ve `setState` ile bir güncelleme yapıldıktan hemen sonra aynı senkron metot zinciri içerisinde `state` değerinin güncelleneceğinin garantisi olmadığından bahsetmiştir. Güncelleme sürci son olarak `render` metoduna geldiğinde bu güncellemenin yapılmış olduğu garanti edilir. Sonuç olarak render metodu içerisinde `state` ve `props` değerleri en güncel hali ile ulaşılabilir durumdadır. 
