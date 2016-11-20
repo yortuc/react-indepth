@@ -15,4 +15,4 @@ Eğer öğelerin `key` değerleri aynı ise, React yeni `props` değerlerini ö
  
  ---
  
- [^1] Daha `state` değerinin güncellenme işleminin asenkron olduğunu ve `setState` ile bir güncelleme yapıldıktan hemen sonra aynı senkron metot zinciri içerisinde `state` değerinin güncelleneceğinin garantisi olmadığından bahsetmiştir. Güncelleme sürci son olarak `render` metoduna geldiğinde bu güncellemenin yapılmış olduğu garanti edilir. Sonuç olarak render metodu içerisinde `state` ve `props` değerleri en güncel hali ile ulaşılabilir durumdadır. 
+ [^1] Daha önce `state`i güncelleme işleminin asenkron olduğunu ve `setState` ile bir güncelleme yapıldıktan hemen sonra aynı senkron metot zinciri içerisinde `state`in güncelleneceği garantisi olmadığından bahsetmiştir. Bileşen güncelleme sürci son olarak `render` metoduna geldiğinde bu güncellemenin yapılmış olduğu garanti edilir. Sonuç olarak render metodu içerisinde `state` ve `props` değerleri en güncel hali ile ulaşılabilir durumdadır. 
