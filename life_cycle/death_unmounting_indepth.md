@@ -1,15 +1,17 @@
-# Death/Unmount In-depth
- After our Component has spent time in the Update phase, we eventually enter the Death phase. During this phase our component is Unmounted from the Native UI stack and is marked for Garbage Collection.
+# Bileşen ölümü
+
+Bileşenimiz güncelleme aşamasında da hayatını sürdürdükten sonra, kaçınılmaz olarak ölüm sürecine girer. Ölüm sürecinde NativeUI katmanından sökülür (unmount) ve `Garbage Collection` için işaretlenir.  
+
+Bileşenin ölüm sürecine girmesi, UI değişmesi ve artık bileşen ağacında bileşen örneğimize karşılık gelen bir `key` değeri kalmaması ile başlar. Bu işlem gerçekten ağaç yapısının değişmesi ile gerçekelebişeceği gibi, bileşen için programsal olarak `key` değerinin değiştirilmesiyle de olabilir (yeni bir bileşen örneği oluşumu için zorlama). Bir kere ölüm sürecine girildiğinde React bileşen ve alt bileşenlerle ilgili süreci başlatır.
+
+## `componentWillUnmount()` metodu
+
+Bu metot, bileşen NativeUI katmanından sökülmeden hemen önce çalışarak bize temizlik yapma imkanı verir. Genellikle `componentWillMount` metodu içerisinde yaptığımız yapılandırmanın tersini yaparak, kaynakları serbest bırakırız. 
+
+Örneğin herhangi bir global olay dinleme işlemini sonlandırmak için (unsubscribe) ya da 3. parti bir kütüphanenin oluşturduğu elemanları yoketmek için en doğru yerdir. Eğer gerekli temizlik yapılaz ise uygulamada hafıza sızıntıları (memory leak) oluşabilir.
  
- We enter this phase when our UI changes and the Element Tree no longer has a matching key to our Component. This could be changing layout or programmatically changing keys (forcing a new Component instance to be created). Once this occurs, React looks at the instance being removed and its children.
+![](react-delete-tree.png)
  
-## Using `componentWillUnmount()`
- Just like the rest of our life cycle phases, the Death/Unmount phase has a method hook for us. This method allows us to do some cleanup before we are removed from the UI stack. Typically we want to reverse any setup we did in either `componentWillMount()` or `componentDidMount()`.
+React işlemlere, kalıdırlmak üzere olan bileşen için `componentWillUnmount` metodunu çalıştırarak başlar (örnekte **A.0**). Daha sonra ilk alt bileşenden başlanarak (**A.0.0**) sırası ile tüm alt bileşenler üzerinde (varsa onların da alt bileşenleri üzerinde) en alt seviyeye kadar `componentWillUnmount` her bir bileşen örneği için `componentWillUnmount` metodu çalıştırılır. Tüm `componentWillUnmount` metotları çalıştıktan sonra bileşen UI katmanından kaldırılır ve `Garbage Collector` için hazır hale gelir.
  
- For example, we would want to unregister any global/system/library events, destroy 3rd party UI library elements, etc. If we don't take the time to remove events we can create memory leaks in our system or leave bad references laying around.
- 
- ![](react-delete-tree.png)
- 
- React starts with the Element being removed, for example **A.0**, and calls `componentWillUnmount()` on it. Then React goes to the first child (**A.0.0**) and does the same, working its way down to the last child. Once all the calls have been made, React will remove the Components from the UI and ready them for Garbage Collection.
- 
- ***Up Next:*** [The Life Cycle Recap](the_life_cycle_recap.md) 
+ ***Gelecek bölüm:*** [Yaşam döngüsü özet](the_life_cycle_recap.md) 

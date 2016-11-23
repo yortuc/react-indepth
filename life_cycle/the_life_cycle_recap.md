@@ -1,32 +1,43 @@
-# The Life Cycle Recap
-We have now worked through the three phases of the React life cycle: [Birth/Mounting](birth_mounting_indepth.md), [Growth/Update](growth_update_indepth.md) and finally [Death/Unmount](death_unmounting_indepth.md). By having these phases and corresponding methods React provides us a clear path for developing Components. These phases also allow us to begin to optimize our Components and our entire application.
+# Yaşam döngüsü özet
 
-To review, the methods and order called are:
+Bir bileşen için üç farklı yaşam döngüsü evresi inceledik. 
 
-## Birth / Mounting
-1. Initialize / Construction
-2. `getDefaultProps()` *(React.createClass)* or `MyComponent.defaultProps` *(ES6 class)*
-3. `getInitialState()` *(React.createClass)* or `this.state = ...` *(ES6 constructor)*
+1. [Doğum/Mounting](birth_mounting_indepth.md)
+2. [Gelişme/Güncelleme](growth_update_indepth.md) 
+3. [Ölüm/Unmount](death_unmounting_indepth.md)
+
+Bu süreçler ve çağrılmas sırası değişmez olan metorlar sayesinde React bize bileşen geliştirebilmek için çok net bir yol çizmiş oluyor. Bu sayede bileşenler ve genel uygulama performansı üzerinde optimizasyon yapabilmemize olanak sağlıyor. 
+
+Hatırlamak gerekirse bu metotlar sırası ile:
+
+## Doğum / Mounting
+1. İlk yapılandırma (initialization)
+2. `getDefaultProps()` *(React.createClass)* veya `Bilesen.defaultProps` *(ES6 class)*
+3. `getInitialState()` *(React.createClass)* veya `this.state = ...` *(ES6 constructor)*
 4. `componentWillMount()`
 5. `render()`
-6. Children initialization & life cycle kickoff
+6. Alt bileşenlerin init edilmesi ve yaşam döngüsüne başlatılması
 7. `componentDidMount()`
   
-## Growth / Update
+## Gelişme / Güncelleme
 1. `componentWillReceiveProps()`
 2. `shouldComponentUpdate()`
 3. `componentWillUpdate()`
 3. `render()`
-4. Children Life cycle methods
+4. Alt bileşen yaşam döngüsü
 5. `componentDidUpdate()`
 
-## Death / Un-Mounting
+## Ölüm / Un-Mounting
 1. `componentWillUnmount()`
-4. Children Life cycle methods
-5. Instance destroyed for Garbage Collection
+4. Alt bileşen yaşam döngüsü 
+5. Bileşen örneğinin Garbage Collection için hazır edilmesi
 
-## Life Cycle Flowchart and `setState()` safety
+## Yaşam döngüsü grafiği ve `setState()` güvenliği
 
-In addition, this flow chart by [Peter Beshai](https://twitter.com/pbesh) breaks down the different methods and also calls out when `this.setState()` is safe and NOT safe to call:
+Ek olarak, [Peter Beshai](https://twitter.com/pbesh) tarafından oluşturulmuş bu grafik üzerinde hangi evrelerde `setState` metodu kullanmak güvenlidir bunu görebiliyoruz.
 
 ![Lifecycl Flow Chart](react-lifecycle-flow-chart-states.png)
+
+---
+
+ ***Gelecek bölüm:*** [Bileşen evrimi ve kompozisyon](the_life_cycle_recap.md) 
