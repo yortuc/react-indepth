@@ -1,6 +1,6 @@
 # Bileşen evrimi ve kompozisyon
 
-Bileşenlerin tekrar kullanılabilmesi (reusability) ve birlikte iç içe kullanılabilmesi (composability) React'in en temel ilkeleridir. Bu iki ilke sayesinde, uygulama karmaşıklaştıkça geliştirme zamanı ciddi şekilde düşer. Ancak tekrar kullanılabilir bileşen geliştirebilmek; planlama ve birçok kullanım alanını düşünebilmeyi gerektirir.
+Bileşenlerin tekrar kullanılabilmesi (reusability) ve basit bileşenler farklı şekillerde kullanılarak daha karmaşık bileşenler oluşturulabilmesi (composability) React'in en temel ilkeleridir. Bu iki ilke sayesinde, uygulama karmaşıklaştıkça geliştirme zamanı ciddi şekilde düşer. Ancak tekrar kullanılabilir bileşen geliştirebilmek; planlama ve birçok kullanım alanını düşünebilmeyi gerektirir.
 
 Bileşenin amacının ne olacağının kesin hatlarının çizilmesi, tekrar kullanılabilir bileşen geliştirmedeki ilk adımdır. Bazen bir bileşenin çok farklı şekillerde kullanılacağını önceden planlarız. Bu gibi durumlarda planımızı buna göre yaparız. Diğer bir durumda ise bileşenin amacı uygulama geliştikçe değişir. Bir bileşenin nasıl evrilmesi gerekitğini bilmek de, tekrar kullanılabilirliği yakalamak kadar önemlidir.
 

@@ -1,28 +1,29 @@
-# The Evolution of a List Component
- Lists are everywhere in applications today. The list is crucial to Social Media UIs, such as Facebook, Twitter, Reddit, Instagram, etc. The current demo app trend of Todos are all about displaying a list of items. The lowly HTML drop-down displays a list of selectable options. It's so common, most of us take lists for granted.
- 
- When we start building our application, how should we approach creating reusable Components? Let's walk through a possible progression of a list feature.
- 
-## The first pass
- Typically, the first approach is to build a React component that renders the UI to the specific layout and data needs. For our example, we are building a list of customer profiles. The first design round requires the profile to have an avatar/picture and descriptive text.
- 
-** UI Wireframe #1**
+# Bir liste bileşeninin evrimi
 
-![A simple profile](react-indepth-avatar-list.png)
+Günümüzde uygulamalarda liste bileşenlerine her yerde yaşanabilmektedir. Örneğin Twitter, Facebook, Reddit, Instagram gibi sosyal medya uygulamalarının arayüzünün bel kemiğini listeler oluşturmaktadır. Bu açıdan, bir liste bileşeni oluşturma aşamalarını incelemek iyi bir pratik olabilir.
 
-The first step would be to create a Component that takes an Array of Objects, which has an image path and the description text. Our Component will loop over this Array and render out each element, using `<li>` items.
+## İlk deneme
+
+İlk etapta yapılacak iş ihtiyacımızı karşılayacak arayüzü kabacak render bir React bileşeni oluşturmaktır. Örneğimizde bir müşteri profilleri listesi oluşturacağız. İlk tasarım taslağında müşteri için bir profil resmi ve ad-soyad gösterecek bir metin alanı yeralacak.
+ 
+**Arayüz taslağı #1**
+
+![Basit bir profil](react-indepth-avatar-list.png)
+
+İlk adım profil resim url'ini ve açıklayıcı metni (ad-soyad) içeren nesnelerden oluşan bir array kabul eden React bileşenini oluşturmaktır. Bileşenimiz bu array üzerinde bir döngü ile ilerleyecek ve her bir elemanı `<li>` kullanarak render edecek.
+
 
 ```javascript
 import React from 'react';
 
-class List extends React.Component {
-  renderProfiles () {
-    return this.props.profile.map( (profile) => {
+class Liste extends React.Component {
+  profilleriRenderEt () {
+    return this.props.profiller.map( (profil) => {
       return (
         <li>
-          <img href={ profile.imagePath } align="left" width="30" height="30" />
-          <div className="profile-description">
-            { profile.description }
+          <img href={ profil.resimUrl } align="left" width="30" height="30" />
+          <div className="profil-aciklama">
+            { profil.aciklama }
           </div>
         </li>
       );
@@ -30,39 +31,42 @@ class List extends React.Component {
   }
 
   render() {
-    return (<ul className="profile-list">{ this.renderProfiles() }</ul>);
+    return (
+      <ul className="profil-liste">
+        { this.profilleriRenderEt() }
+      </ul>);
   }
 }
 
-List.defaultProps = { profile: [] };
-export default List;
+Liste.defaultProps = { profil: [] };
+export default Liste;
 ```
 
-We would then apply styling to the `<ul>`, `<li>` and `<div>` elements to meet our design needs. This Component is a simple way of rendering out our content. It meets our design needs but isn't reusable.
+Daha sonra tasarım ihtiyacını karşılamak için  `<ul>`, `<li>` ve `<div>` elementlerine stil veriyoruz. Bu bileşen ihtiyacımızı şimdilik karşılıyor, gerekli içeriği render ediyor ancak tekrar kullanılabilir değil.
 
-## Requirements change
- As with any project, needs change. For our example, the users now want to list more details about each customer. The design team comes up with a new layout and we now have to support optional fields.
+
+## İhtiyaçların değişmesi
+
+Her proje zaman içerisinde değişime ihtiyaç duyar. Örneğimizde, kullanıcılar bir profil için daha fazla bilgi görmek istiyor olabilir. 
+
+**Arayüz taslağı #2**
  
- ** UI Wireframe #2**
+![İsteğe bağlı detaylar](react-indepth-details-list.png)
  
- ![Optional Details](react-indepth-details-list.png)
+Bu ilk tasarım değişikliği ile beraber, bileşen üzerinde refactor işlemine başlamış oluyoruz. Yeni eklenen isteğe bağlı alanları render edebilmek için bileşen render meetodunda revizyona gitmemeiz gerekiyor. Bileşenleri ne kadar küçük be birbirinden bağımsız tasarlamamanın birçok faydası vardır. Öncelikle zihinsel yükü azaltmış oluruz. Küçük bileşenlerin kodunu okumak, anlamak ve revize etmek daha kolay olacaktır. Altı ay sonra, yazdığımız koda döndüğümüzde, o anki niyetleri ve düşünceleri hatırlmak, hele ki bileşenler karmaşık mantık içeriyor ise ciddi zaman alabilir. 
+
+React'in en güzel özelliklerinden birisi de bileşenleri daha küçük parçalara ayırabilme imkanı vermesidir. Kodu daha anlaşılır kılacağı gibi, bileşenlerin tekrar kullanabilirliğini de artıracaktır.
+
+Bu doğrultuda her bir bileşen sadece tek bir iş yapacak şekilde tasarlanmalıdır. Yukarıda oluşturduğumuz liste bileşeni, profilleri alarak tek tek render etmektedir. Bir profilin render edilmesi başka bir bileşen tarafından yapılırsa, bu bileşeni daha sonra da kullanabiliriz. Profil render işlemi için yeni bir bileşen oluşturalım ve önceki bileşeni refactor edelim.
+
  
- With this new design we now need to do our first bit of Component refactoring. To support the new optional detail fields, we need to add logic to our Profile rendering. A good development practice is to keep our React Components as compartmentalized as possible. This enables multiple benefits.
+## Profil bileşeni
  
- First, it helps reduce cognitive load. Having smaller, single focused Components means they are easier to read and understand the intention. A common experience we have all had as developers is returning to our own code six or more months later. Because we wrote it, we *should* understand it, but often it takes a bit of time to put ourselves back into mindset of what the code is solving. If the Component has hundreds of lines of logic, it will take that much more time to grok what the intention is. Even harder (and time consuming) is doing this with another developer's work.
- 
- One of the beautiful features of React is that we can (and should) break our Components into small bite-sized chunks. Because it is so easy in React, this helps us make our code easier to understand. At the same time, this leads to the second benefit: faster reusability.
- 
- If we break out a Component to a single task, such as rendering a single profile, we now have the potential to reuse it. It is possible that elsewhere in the app we need to show a profile. With our current implementation, this is not easily done. This is because the rendering of the profile details is handled internally by the List component. Let's break the profile details out into a new Component and refactor our List a bit.
- 
-## Creating a Profile Component
- The first step is to move the render code from the List into it's own Component.
- 
- **Profile.js**
+ **Profil.js**
 ```javascript
 import React from 'react';
 
-export default class Profile extends React.Component {
+export default class Profil extends React.Component {
   renderDetails(key, label){
     if (this.props[key]) {
       return (<div className="detail">{ label } { this.props[key] }</div>);
@@ -85,33 +89,33 @@ export default class Profile extends React.Component {
 }
 ```
 
- Here we have broken out the optional details rendering into a new Component called `Profile`. Profile's job is to render out the base layout and then render out our optional details, depending on if they are defined or not[^1]. We can then update our List code:
+Burada profil bilgilerini render etme işlemini `Liste` bileşeninden çıkartarak, yeni oluşturduğumuz `Porfil` bileşenine veriyoruz. İsteğe bağlı bilgilerin render edilmesi işini de bu bileşene devrediyoruz.
 
- **List.js**
+ **Liste.js**
 
 ```javascript
 import React from 'react';
 import Profile from './Profile';
 
-class List extends React.Component {
+class Liste extends React.Component {
   render() {
     return (
       <ul>
-        { this.props.profile.map( (profile) => <Profile {...profile} /> ) }
+        { this.props.profiller.map( (profil) => <Profil {...profil} /> ) }
       </ul>
     );
   }
 }
 
-List.defaultProps = { profile: [] };
+Liste.defaultProps = { profil: [] };
 export default List;
 ```
 
- Now our List maps the profile data and sends it to the `Profile` Component for rendering. By isolating the rendering of the profile to a single component we have a clear [separation of concerns (SoC)](https://en.wikipedia.org/wiki/Separation_of_concerns). Not only do we get the benefit of SoC, we also make each Component a lot easier to understand. When we have to return to this code six months later, it will be a lot faster to get caught back up.
- 
- ***Up Next***: [Rendering Different Content](rendering_different_content.md)
+Şimdi `Liste` bileşenimiz kendisine verilen `profiller` datasını itere ederek `Profil` bileşenine aktarıyor. Profil render işleminin listeden bağımsız ayrı ve izole bir bileşen tarafından yapılması sayesinde net bir [separation of concerns (SoC)](https://en.wikipedia.org/wiki/Separation_of_concerns) yapısı elde etmiş oluyoruz.
+
+***Gelecek bölüm***: [Farklı içerik render etme](rendering_different_content.md)
  
  ---
  
- [^1] Following this pattern we could go even further if so desired. We could break out each Profile detail into its own Component. Yet, that maybe going too far down the granularity rabbit hole. Once again, over-architecture is a slippery slope and having to make a judgment call is part of the process.
-
+ [^1] Bu mantık ile daha da ileri gidebiliriz. Profil bileşenindeki detayların da farklı bileşen tarafından render edilmesini sağlayabiliriz. Ancak bu da `granularity` noktasında abartı olacaktır. Daha önce bahsettiğimiz gibi, uygulama yapısını karmaşıklaştıran her etken bize zarar vermektedir.
+ P
