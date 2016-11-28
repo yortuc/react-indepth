@@ -1,25 +1,30 @@
-# Higher Order Components
- The last Component composition pattern we will examine in this section is *Higher Order Components* (HOC). As [Dan Abramov discusses](https://medium.com/@dan_abramov/mixins-are-dead-long-live-higher-order-components-94a0d2f9e750#.b74nxbqew), Higher Order Components were first proposed by [Sebastian Markbåge](https://gist.github.com/sebmarkbage/ef0bf1f338a7182b6775) in a gist. The core idea of HOC is to define a function, which you pass one or more Components to. This function generates and returns a new Component, which is a wrapper around the passed in Component(s).
- 
- The need for HOC came about with React's move to support ES6 classes and the lack of mixin support with the new JavaScript Class syntax. To handle this change, a new pattern needed to be defined to replace mixins. Typically, mixins add/override functionality around the [Component Life Cycle](../life_cycle/introduction.md) and enable sharing reusable code in a elegant way. Without mixin support in ES6, the HOC pattern is required.
- 
- ### A form group example
-  For our HOC example, we will create a function for wrapping a Component in a custom form group with an optional `<label>` field. The goal of the HOC is to allow us to create two outputs, with and without a label:
+# Yüksek derece bileşenler
+
+Bileşen kompozisyon yöntemlerinden son olarak *Yüksek derece bileşenler*i inceleyeceğiz. [Dan Abramov'un](https://medium.com/@dan_abramov/mixins-are-dead-long-live-higher-order-components-94a0d2f9e750#.b74nxbqew) belirttiği gibi, yükske dereceli bileşenler ilk olarak [Sebastian Markbåge](https://gist.github.com/sebmarkbage/ef0bf1f338a7182b6775) tarafından bir gist'te önerilmiştir. Temel fikir, bir fonksiyon oluşturup, bu fonksiyona çeşitli bileşenleri parametre olarak göndermektir. Bu fonksiyon da, kendisine verilen bileşenleri kapsayan yeni bir bileşen döndürmektedir. 
+
+React ES6 kullanımı ile birlikte mixin desteğini kaldırdığında, bu tarz bir kullanıma ihitiyaç duyulmaya başlandı. Genel olarak mixin'ler, bir bileşene çeşitli özellikler kazandıran tekrar kullanılabilir kod parçalarıydı. ES6'daki javascript class'ları ile birlikte kaldırılan mixin'lerin yerini tutacak bir mekanizmaya ihtiyaç duyuldu.
+
+
+### Form grubu örneği
+
+Verilen bir bileşeni form grubu tagleri içerisine saran ve isteğe bağlı bir `<label>` alanı içeren yüksek dereceli bir bileşen örneğini inceleyelim. Bileşenin amacı `<label>` barındıran ya da barındırmayan iki farklı çıktı alabilmek.
+
   
-  ```html
-  <!-- With a label -->
+```html
+  <!-- label -->
   <div class="form-group">
-    <label class="form-label" for="firstName">First Name:</label>
-    <input type="text" name="firstName" />
+    <label class="form-label" for="isim">İsim:</label>
+    <input type="text" name="isim" />
   </div>
-  
-  <!-- Without a label -->
+
+  <!-- label olmadan -->
   <div class="form-group">
-    <input type="text" name="lastName" />
+    <input type="text" name="soyAd" />
   </div>
-  ```
- 
- Because this could become a common task, we can use the HOC pattern to generate our form group wrapper and let it decide if it should inject the label or not.
+```
+
+Sürekli karşılaşılabilecek bir durum olduğu için, label kullanılıp kullanılmamasına göre gerekli bileşenlerin oluşturulma işini yüksek derece bileşene devredebiliriz.
+
  
  **formGroup.js**
 ```javascript
@@ -29,7 +34,7 @@ import { isString } from 'lodash';
 function formGroup(Component, config) {
   const FormGroup = React.createClass({
     __renderLabel() {
-      // check if the passed value is a string using Lodash#isString
+      // Lodash#isString metodu ile verilen parametrenin strin olup olmadığını kontrol et
       if (isString(this.props.label)) {
         return(
           <label className="form-label" htmlFor={ this.props.name }>
@@ -40,8 +45,8 @@ function formGroup(Component, config) {
     },
 
     __renderElement() {
-      // We need to see if we passed a Component or an Element
-      // such as Profile vs. <input type="text" />
+      // parametre olarak bir element mi yoksa bileşen mi verildi?
+      // (bileşen Profil, element: <input type="text" /> )
       if (React.isValidElement(Component)) return React.cloneElement(Component, this.props);
       return( <Component { ...this.props } />);
     },
@@ -62,7 +67,7 @@ function formGroup(Component, config) {
 export default formGroup;
 ```
 
-To use this HOC we can do the following:
+Yüksek derece bileşeni kullanmak için:
 
 **index.js**
 ```javascript
@@ -74,7 +79,7 @@ let MyComponent = React.createClass({
   render() {
     return (
       <div>
-        { formGroup(<input type="text" />, { label: 'First Name:', name: 'firstName' }) }
+        { formGroup(<input type="text" />, { label: 'İsim:', name: 'txtIsim' }) }
       </div>
     );
   }
@@ -83,7 +88,8 @@ let MyComponent = React.createClass({
 ReactDOM.render(<MyComponent />, document.getElementById('mount-point'));
 ```
 
-Let's examine the above code. The first thing we do for the HOC is create a function called `formGroup` which takes two arguments: `Component` and `config`.
+Yüksek dereceli bileşen için `Component` ve `config` şeklinde iki parametre alan `formGroup` adında bir fonksiyon oluşturuyoruz. 
+
 
 ```javascript
 function formGroup(Component, config) {
@@ -93,7 +99,7 @@ function formGroup(Component, config) {
 export default formGroup;
 ```
 
-The Component will be the instance we want to wrap in our form group. In the function, we create a new React Component and then return an Element instance using the `config` as props.
+From grubu içerisinde sarmak istediğimiz bileşeni `Component` parametresi olarak gönderiyoruz. Fonksiyon içerisinde bir React bileşeni oluşturup, `config` parametresi `props` olacak şekilde bir element örneği oluşturup geri döndürüyoruz.
 
 ```javascript
 const FormGroup = React.createClass({
@@ -103,7 +109,7 @@ const FormGroup = React.createClass({
 return(<FormGroup { ...config } />);
 ```
 
-We take advantage of the [ES6 spread operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_operator) to pass in our `config` object as the props for the generated JSX Element. In our `render()` method we create the form group `<div>` and then render out our optional label and Component content.
+Burada [ES6 spread operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_operator) yardımı ile `config` parametresi ile gelen javasript nesnesini elemente `props` olarak aktarıyoruz. Render metodunda bir `<div>` elementi ile form grubun oluşturarak, gerekli ise label ile birlikte render ediyoruz.
 
 ```javascript
 render() {
@@ -116,7 +122,7 @@ render() {
 }
 ```
 
-In our `__renderLabel()` method[^1] we use the [Lodash `isString`](https://lodash.com/docs#isString) method to check if the label value is a string. If so, we render out our label DOM element, otherwise we return `null`.
+`__renderLabel()` metodunda[^1] verilen parametrenin bir `string` olup olmadığını anlamak için [Lodash `isString`](https://lodash.com/docs#isString) metodunu kullandık. Eğere `string` ise, label'i render ediyoruz. Eğer değilse, biz bir değer döndürmediğimiz için fonksiyon `undefined` döndürcek ve label render edilmeyecektir.
 
 ```javascript
 __renderLabel() {
@@ -131,40 +137,41 @@ __renderLabel() {
 },
 ```
 
-Because `null` does not render out to the Native UI in React, this is how we make the `<label>` optional based on the passed value. 
-
-Finally, we had to add a check to determine what type was passed to our HOC function for the Component. This is an important check because we want to support both React Components and Elements. 
-
-In our `index.js` we are passing in:
+Son olarak, `Component` parametresini kontrol ediyoruz. Fonksiyonun hem element hem de bileşen ile çalışabilmesini istiyoruz. 
 
 ```javascript
-formGroup(<input type="text" />, { label: 'First Name:', name: 'firstName' })
+formGroup(<input type="text" />, { label: 'İsim:', name: 'txtIsim' })
 ```
-
-Because we are using JSX to generate our `<input />` the HOC will receive an Element. But, if we used our Profile component, we may not want to use JSX:
+Yukarıdaki örnekte bir input elementi verdiğimiz için fonksiyon bu elementi form grubu içerisine gömecektir. Bileşen de verebiliriz:
 
 ```javascript
-formGroup(Profile, { label: 'First Name:', name: 'firstName' })
+formGroup(Profil, { label: 'İsim:', name: 'txtIsim' })
 ```
 
-To support both options and pass on the `props`, we use the `__renderElement()` method to handle the inspection and output generation:
+İki durumu da desteklemek için `__renderElement()` içerisinde verilen parametreyi kontrol ediyor ve ona uygun aksiyonu alıyoruz.
+
 
 ```javascript
 __renderElement() {
-  // We need to see if we passed a Component or an Element
-  // such as Profile vs. <input type="text" />
+  // parametre olarak bir element mi yoksa bileşen mi verildi?
+  // (bileşen Profil, element: <input type="text" /> )
   if (React.isValidElement(Component)) return React.cloneElement(Component, this.props);
   return( <Component { ...this.props } />);
 },
 ```
 
-If the Component instance is an element, we [clone the element](https://facebook.github.io/react/docs/top-level-api.html#react.cloneelement) and pass on the new props. Otherwise, we generate a new Element using JSX and the passed in React Component.
+Eğere `Component` parametresi bir element ise, [React.cloneElement](https://facebook.github.io/react/docs/top-level-api.html#react.cloneelement)  metodu ile elementin kopyasını oluşturarak, `props` değerini aktarıyoruz. Eğer parametre bileşen ise zaten bileşen örneğini oluşturup geri döndürüyoruz.
 
-This HOC example is just the tip of the iceberg when it comes to self-generating wrapper components. Using this pattern, we can tap into the [Component Life Cycle methods](../life_cycle/introduction.md), we can make more complex decisions based on the data, we can register to stores or other events, and many other possible combinations.
+Yüksek derece bileşenler ile elimizdeki veriye bakarak daha karmaşık kararlar verebilir ve elde edilmesi gereken çıktıya ulaşabiliriz. Daha ileri örnekler için Dan Abramov'un bu konudaki:
 
-For more in-depth examples we highly recommend reading Dan Abramov's *[Mixins Are Dead. Long Live Composition](https://medium.com/@dan_abramov/mixins-are-dead-long-live-higher-order-components-94a0d2f9e750#.9y0gg1ix5)* and @franlplant's *[React Higher Order Components in depth](https://medium.com/@franleplant/react-higher-order-components-in-depth-cf9032ee6c3e#.d38rbnsu8)* 
+-*[Mixins Are Dead. Long Live Composition](https://medium.com/@dan_abramov/mixins-are-dead-long-live-higher-order-components-94a0d2f9e750#.9y0gg1ix5)* 
+
+ve @franlplant'ın 
+
+-*[React Higher Order Components in depth](https://medium.com/@franleplant/react-higher-order-components-in-depth-cf9032ee6c3e#.d38rbnsu8)* 
+
+makalelerini inceleyebilirsiniz.
 
 ---
 
-[^1] In these examples we are prefixing our methods with `__` to reflect that these are internal component methods. This is completely optional and is just our preferred style syntax.
-
+[^1] Bu örnekte kısmi render metodlarının başına `__` ekleyerek bunların tamamen bileşen ile alakalı dahili metotlar olduğunu belirtiyoruz. Bu tamamen isteğe bağlı olan bir yaklaşımdır.

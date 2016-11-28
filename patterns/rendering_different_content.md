@@ -81,7 +81,7 @@ ReactDOM.render(<App />, document.getElementById('mount-point'));
 
 `index.js` içerisinde iki farklı Liste bileşeni kullandık. Birincisinde profil datasını ve ikincisinde ise blog gönderilerini render ediyoruz. Bu data array'lerinin hangi liste elemaı bileşeni ile render edileceğini ise `itemRenderer` metodu ile bileşene enjekte ediyoruz. Liste bileşeni bünyesindei `map` metodunda, kendisine `prop` vasıtası ile verdiğimiz `renderProfil` veya `renderPosts` fonksiyonun çağırarak o elemana özel render işlemi gerçekleştiriyor.
 
-### `Key` kullanımı bileşen array'leri
+### `Key` kullanımı ve bileşen array'leri
 
 `itemRenderer` metodunun bir de `index` argümanı aldığını görüyoruz. Listede her bir eleman için `unique` olacak şekilde bir anahtar değerine ihityaç duyulur. Render işlemini burada olduğu gibi başka bir fonksiyona devrettiğimizde, React bu `key` değerlerini bizim için otomatik olarak oluşturamaz. 
 
