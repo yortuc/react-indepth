@@ -1,24 +1,32 @@
-# Rendering different content
- By moving our UI rendering of each Profile to a Component, we have separated layout and content display. The List is responsible for layout and data management. The Profile is responsible for UI rendering for each individual item. Because of this first step, we can move one step further and make our List even more flexible.
+# Farklı içerik render etme
+
+Profillerin render edilmesini müstakil bir bileşene devrederek listenin yerleşimini ve içeriğini ayırmış oluyoruz. Liste bileşeni, listenin yerleşimini ve veri yönetimi idare eder bir hale gelirken, liste elemanlarını (profil) kendi bağımsız bileşeni istediği şekilde render ediyor. Bu yapının da katkısı ile daha da esnek bir liste bileşeni elde etmemiz mümkün.
+
  
-## List Feature expansion
- Continuing our customer example, let's imagine that our Profile List has started to evolve even more. We have added pagination support, selection management, sorting, filtering, etc. Now, our users request the ability to manage a different kind of content. They now want to manage Posts. 
+## Liste özellikleri
+
+Liste bileşenimizin, yazılım geliştikçe daha da farklı ihtiyaçları doğduğunu düşünelim. Sayfalama, seçim yönetimi, sıralama, filtreleme gibi özellikler gerekebilir. Daha da ötesi, kullanıcılar farklı listelere ihtiyaç duyabilir. Örneğin blog gönderilerinin listelenmesi gibi.
+
+Blog gönderileri de profil gibi birer resim, açıklama ve detay özelliklerine sahipler. Ancak içerik ve bu içeriğin yerleşimi tamamen profilden farklı. Burada Liste bileşeninin sahip olduğu sayfalama, sıralama, filtreme vb. tüm özellikleri kullanma devam ederken, aynı zamanda profil yerine blog gönderileri göstermek istiyoruz. Bunu nasıl sağlayabiliriz?
  
- These Posts have some similar UI elements as our profile: images, descriptions, and details. But the layout and content vary drastically. We still need all the of the functionality of the List; pagination, filtering, etc. The question becomes, how do we handle this?
- 
-## Item Rendering
- A simple, but not ideal, approach would be to add a switch in our List's `map` method. The switch checks the data type and then chooses to use the Profile Component or the Post Component. But, this approach adds a pretty bad [code smell](https://en.wikipedia.org/wiki/Code_smell). Similar to our first draft of the List, it meets our immediate needs but what happens when we need a Message List? Or Viewer List? Soon our List has a lot of switches.
- 
+## Eleman render etme
+
+İdeal olmasa da pratik bir metot, liste bileşeninin `map` metoduna bir `switch` eklemek olabilir. `switch`, liste elemanının veri türüne bakaradak render etmek için profil bileşenini ya da blog gönderisi bileşenini seçebilir. Ancak bu yöntem kodumuzda bir [code smell](https://en.wikipedia.org/wiki/Code_smell)'e sebep olur. Aynı ilk Liste bileşen tasarımında olduğu gibi, bu yöntem şuanki sorunumuzu çözse de, ileride yeni bir liste elemanı bileşeni ortaya çıktığında (Mesaj gibi) ne olacak? Liste bileşeni birçok `switch` kontrolü içermek zorunda kalacaktır.
+
+Daha iyi bir çözüm ise konfigürasyon ile bu problemi çözmek olabilir. Liste bileşeni üzerinde bir `prop` vasıtası ile listenin her elemanı için ne tür bir bileşenle render edilmesi gerektiği belirtileiblir. 
+
  A better way to solve this is through configuration. We can expose a prop on the List component that handles the rendering of each item. There are two ways to do this: by passing in a function or by passing in a Component Class.
- 
-### Function Item Renderer
- The first approach we will examine is passing in a function that handles rendering out each individual item in the List. The first step is to update our List component to require a `itemRenderer` prop that is a function and changing our profiles `prop` to items.
- 
-**List.js**
+
+
+### Eleman render etme fonksiyonu
+
+İlk deneme olarak, her bir elemanın nasıl render edilmesi gerektiğini kontrol edecek bir fonksiyonu liste bileşenine bir `prop` olarak vereceğiz. 
+
+**Liste.js**
 ```javascript
 import React from 'react';
 
-class List extends React.Component {
+class Liste extends React.Component {
   render() {
     return (
       <ul>
@@ -36,7 +44,7 @@ List.defaultProps = { items: [] };
 export default List;
 ```
 
-We have added a `propTypes` configuration to require the `itemRenderer` prop, which needs to be a function. We also added an items `prop`, which replaces `profiles`. In our `render()` we now call the function passing in the item instance data and the index. We will talk more about why we need to pass `index` in a bit. In our parent Component or App we now do the following:
+Bileşen konfigurasyonunda `itemRender` isimli bir fonksiyonun bileşene tanımlanmasını zorunlu ılıyoruz. Bir diğer değişiklik de, profiller yerine daha genel olacak şekilde `items` isimli bir array tanımlıyoruz. Liste bileşeni render metodunda artık her bir eleman için, props aracıığı ile verilen fonksiyonu çalıştırıyoruz. 
 
 **index.js**
 ```javascript
@@ -46,8 +54,8 @@ import List from './components/List';
 import Profile from './components/Profile';
 import Posts from './components/Posts';
 
-let profileData = [ ... ] // psuedo code, this has all our profile data
-let postsData = [ ... ] // psuedo code, this has all our post data
+let profileData = [ ... ] // profil datası
+let postsData = [ ... ]   // blog gönderileri
 
 class App extends React.Component {
   renderProfile(profile, key) {
@@ -71,40 +79,36 @@ class App extends React.Component {
 ReactDOM.render(<App />, document.getElementById('mount-point'));
 ```
 
-In `index.js` we render out two different List components. For the first List, we pass in our profile data and our `renderProfile` method reference. Just like any React action (such as `onClick`) we pass the method reference and do not actually call the method. For the second, we pass in the posts data and the `renderPosts` method reference.
+`index.js` içerisinde iki farklı Liste bileşeni kullandık. Birincisinde profil datasını ve ikincisinde ise blog gönderilerini render ediyoruz. Bu data array'lerinin hangi liste elemaı bileşeni ile render edileceğini ise `itemRenderer` metodu ile bileşene enjekte ediyoruz. Liste bileşeni bünyesindei `map` metodunda, kendisine `prop` vasıtası ile verdiğimiz `renderProfil` veya `renderPosts` fonksiyonun çağırarak o elemana özel render işlemi gerçekleştiriyor.
 
-When the Lists render, the `map` method calls either `renderProfile()` or `renderPosts()` with each data element and the current index. 
+### `Key` kullanımı bileşen array'leri
 
-### React keys and arrays of components
- The reason we pass index is that we need to generate a unique key for each item in the list. When we offload rendering to a method, we no longer get React's built in ability to generate the keys for us.
+`itemRenderer` metodunun bir de `index` argümanı aldığını görüyoruz. Listede her bir eleman için `unique` olacak şekilde bir anahtar değerine ihityaç duyulur. Render işlemini burada olduğu gibi başka bir fonksiyona devrettiğimizde, React bu `key` değerlerini bizim için otomatik olarak oluşturamaz. 
 
- React Component keys are used for Component Reconciliation: 
- 
-> Reconciliation is the process by which React updates the DOM with each new render pass...
-> 
-> ... The situation gets more complicated when the children are shuffled around (as in search results) or if new components are added onto the front of the list (as in streams). In these cases where the identity and state of each child must be maintained across render passes, you can uniquely identify each child by assigning it a key
->
-> When React reconciles the keyed children, it will ensure that any child with key will be reordered (instead of clobbered) or destroyed (instead of reused).
-> 
-> -- [React Child Reconciliation](https://facebook.github.io/react/docs/multiple-components.html#child-reconciliation) 
+Anahtar değerleri `Reconciliation` aşaması için gereklidir
 
-If we don't set a key when generating children dynamically (via our `itemRenderer` method) we would get the following warning:
+> Reconciliation (uzlaşma) aşamasında React, sanal dom çıktısı ile gerçek DOM'u günceller. Esas sorun dinamik olarak oluşturulmuş olan (liste bileşeninde olduğu gibi) alt bileşenlerin render edilmesinde ortaya çıkar. Alt bileşenlerin sıralaması değişmiş olabilir (liste filtreleme gibi durumlarda) ya da yeni alt bileşenler eklenmiş / kaldırılmış olabilir, bu durumda her bir alt bileşeni bir anahtar (`key`) ile tanıyabilir ve düzgün bir şekilde render edebiliriz.
+
+> -- [React Al bileşen uzlaşması](https://facebook.github.io/react/docs/multiple-components.html#child-reconciliation) 
+
+Eğer dinamik olarak (genellikle bir array üzerinde `map` meotdu ile) oluşturulmuş alt bileşenler için, bileşene özel `key` değeri tanımlamaz isek bir uyarı mesajı ike karşılaşırız:
 
 > Warning: Each child in an array or iterator should have a unique "key" prop. Check the render method of `List`. See https://fb.me/react-warning-keys for more information.
 
-The quick solution is to pass in the index of the data, but this may not be the ideal solution. The problem with this approach is that it generates a key based on item order. It would be better to use a unique `id` that's defined on the data set. Another option is generating a hash code or some other unique identifier that reflects the data element's content.
+Hızlı bir çözüm, her elemanın `index` (array içerisindeki sıra numarası gibi düşünebiliriz) değeri üzerinden bir `key` oluşturmaktır. Ancak bu çözüm ideal değildir. Listeye yeni eleman eklenip çıkarıldığında her bir elemanın liste içerisindeki sıra numarası değişecektir, aynı sıra numarası iki durumda iki farklı liste elemanına işaret edecektir. Oysa ki `key` değeri her render işleminde bir bileşen için ayırdedici olmalıdır. Data içerisinde tanımlı (örneğin db kayıtlarından gelen tablo id değeri) id değerleri kullanmak daha sağlıklıdır. Ya da her elemanı kendi iç datasına göre `hash`leyip, o elemana özel bir `key` değeri türetmek de, ilk yönteme göre daha sağlıklı olur.
 
-By having an identifier based on the data content instead of order, we can help optimize the Component rendering. When we display partial lists, such as filtering or sorting, if our key is based on the content and not order, React knows it doesn't have to generate a new Element for the data. It just needs to reorder the elements.
+Elemanın liste içerisindeki konumunua bağlı bir `key` değeri yerine, eleman datasına bağlı bir `key` değerine sahio olmak, bileşen render işlemini optimize etmede çok işimize yarar. Örneğin kısmi bir liste oluşturmak istediğimizde (listeyi filtreleyip sadece belirli kritere uyan elemanları listelediğimiz gibi), React tam olarak hangi elemanı tekrar render etmesi gerektiğini hangisi olduğu gibi kullanması gerektiğini bilebilir.
 
-### Component Item Renderer
- Another option for handling dynamic renderers, is to use a Component Class reference. This process is similar to passing in a function. Instead of offloading the rendering to the return value of a method we create a React Element from the Component and pass in the configuration.
+### Bileşen tipi ile eleman render etme
+
+Dinamik olarka liste elemanlarını render etmenin bir diğer yolu da bileşen class referansı vermektir. 
  
- **List.js**
+ **Liste.js**
 ```javascript
 import React from 'react';
 import Profile from './Profile';
 
-class List extends React.Component {
+class Liste extends React.Component {
   render() {
     return (
       <ul>
@@ -118,24 +122,24 @@ class List extends React.Component {
 }
 
 List.propTypes = { itemRenderer: React.PropTypes.func };
-List.defaultProps = { profile: [], itemRenderer: Profile };
+List.defaultProps = { profile: [], itemRenderer: Profil };
 export default List; 
 ```
- 
- In this version of the List Component, we create a new React Element using the `this.props.itemRenderer` as the Component Class type. We generate a `newProps` object that adds the `key` to the profile data and pass this to the Element as its `props`.
- 
- Because we define a default item renderer of `Profile` in the `defaultProps` we can update `propTypes` to make `itemRenderer` an optional param. To use this version of the List our index.js now looks like this:
+
+Buradaki liste bileşeni her bir liste elemanı için `itemRenderer` prop'unda belirtilen bileşeni kullanmaktadır. Bu yöntemde bileşen isimleri dinamik olarak verilmekte ve liste elemanları istenilen bileşen ile render edilebilmektedir. Ayrıca varsayılan değer olarak `Profil` bileşenini tanımlıyoruz, bu sayede profil render etmek istediğimizde ayrıca `itemRenderer` prop'unu tanımlamaya gerke duymamış oluyoruz.
+
+Örnek bir kullanım şu şekilde olabilir:
  
 **index.js**
  ```javascript
 import React from 'react';
 import ReactDOM from 'react-dom';
 import List from './components/List';
-import Profile from './components/Profile';
+import Profile from './components/Profil';
 import Post from './components/Post';
 
-let profileData = [ ... ] // psuedo code, this has all our profile data
-let postsData = [ ... ] // psuedo code, this has all our post data
+let profileData = [ ... ] // profil datası array'i
+let postsData = [ ... ]   // blo gönderileri
 
 class App extends React.Component { 
   render() {
@@ -151,8 +155,7 @@ class App extends React.Component {
 ReactDOM.render(<App />, document.getElementById('mount-point'));
 ```
 
-Since we have a default item renderer (the Profile Component), the first version of the List just needs the profile data. In the second version, we change out the renderer type by passing in our Component and passing in the item data.
+Liste bileşeni render metodunda her bir liste elemanı için `itemRenderer` prop'unda verdiğimiz bileşeni kullanarak render işlemini gerçekleştiriyor. Bu sayede tek bir liste bileşeni ile hem profil hem de post (ve de ilerinde ekleyebileceğimiz her türlü alt bileşeni) render edebiliyoruz. Tercih meslesi olsa da, bu yöntemin fonksiyon verme yönteminden daha temiz olduğu söylenebilir.
 
-When our List renders the data it now creates a React Element from the `itemRenderer` value and passes in the current data element. At [DevelopmentArc](http://developmentarc.com), we have found using a React Class is a much cleaner approach to developing replaceable UI elements.
 
- ***Up Next***: [Higher Order Components](higher_order_components.md)
+***Gelecek bölüm***: [Yüksek derece bileşenler](higher_order_components.md)
