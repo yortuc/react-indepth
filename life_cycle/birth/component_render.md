@@ -43,10 +43,7 @@ Uyarı mesajı
 
 > VM943:45 Warning: Person is accessing getDOMNode or findDOMNode inside its render(). render() should be a pure function of props and state. It should never access something that requires stale data from the previous render, such as refs. Move this logic to componentDidMount and componentDidUpdate instead.
 
-
 Burada da yine `render()` metodunun `pür` olması gerektiği kuralını ihlal ediyoruz. `findDOMNode()` metodu ile DOM üzerinde, bir önceki render'de oluşturulmuş bir `bilgi`yi sorguluyor olabiliriz. Hatta ki ilk `render()` metodunda bu sorgulama yapılıyor ise, henüz bu bileşen için DOM üzerinde birşey oluşturulmadığı için sorgulama sonucu hata döndürecektir. 
-
-> Uncaught Invariant Violation: findComponentRoot(..., .0): Unable to find element. This probably means the DOM was unexpectedly mutated (e.g., by the browser), usually due to forgetting a &lt;tbod&gt; when using tables, nesting tags like &lt;form&gt;, &lt;p&gt;, or &lt;a&gt;, or using non-SVG elements in an &lt;svg&gt; parent. Try inspecting the child nodes of the element with React ID `Kisi`.
 
 Madem ki `render()` metodu pür bir fonksiyon olmalıdır, ihtiyacı olan tek bilgi bileşenin o andaki `props` ve `state` değerleridir. Bunlar dışında hiçbir `veri` render esnasında kullanılmamalıdır.
 
